@@ -1,0 +1,16 @@
+runtime: nodejs20
+entrypoint: npm start
+instance_class: F2
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 0
+  max_instances: 1
+
+env_variables:
+  NODE_ENV: 'production'
+  DATABASE_URL: 'postgresql://postgres:SecureP@ssw0rd2025!@/appri?host=/cloudsql/prediction-market-project:us-central1:appri-db-2'
+  JWT_SECRET: 'your-production-secret-key-change-this'
+  USE_MOCK_DB: 'false'
+
+beta_settings:
+  cloud_sql_instances: 'prediction-market-project:us-central1:appri-db-2'

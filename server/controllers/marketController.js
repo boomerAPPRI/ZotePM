@@ -1,0 +1,206 @@
+const db = require('../db');
+const LMSR = require('../utils/lmsr');
+
+const lmsr = new LMSR(100); // Default liquidity parameter
+
+const getMarkets = async (req, res) => {
+    try {
+        const marketsResult = await db.query('SELECT * FROM markets ORDER BY created_at DESC');
+        const markets = marketsResult.rows;
+
+        // Fetch all orders to calculate prices
+        // Optimization: In a real app, we might cache this or use a materialized view
+        const ordersResult = await db.query('SELECT market_id, outcome_id, amount FROM orders');
+        const orders = ordersResult.rows;
+
+        const marketsWithPrices = markets.map(market => {
+            const currentQuantities = new Array(market.outcomes.length).fill(0);
+
+            // Filter orders for this market
+            const marketOrders = orders.filter(o => o.market_id === market.id);
+
+            marketOrders.forEach(order => {
+                const index = market.outcomes.findIndex(o => o.id === order.outcome_id);
+                if (index !== -1) {
+                    currentQuantities[index] += parseFloat(order.amount);
+                }
+            });
+
+            const prices = market.outcomes.map((_, index) => lmsr.calculatePrice(currentQuantities, index));
+
+            return {
+                ...market,
+                outcomes: market.outcomes.map((o, i) => ({
+                    ...o,
+                    price: prices[i],
+                    quantity: currentQuantities[i]
+                }))
+            };
+        });
+
+        res.json(marketsWithPrices);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const getMarket = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const marketResult = await db.query('SELECT * FROM markets WHERE id = $1', [id]);
+        if (marketResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Market not found' });
+        }
+        const market = marketResult.rows[0];
+
+        // Calculate current prices
+        const ordersResult = await db.query('SELECT outcome_id, amount FROM orders WHERE market_id = $1', [id]);
+        const currentQuantities = new Array(market.outcomes.length).fill(0);
+
+        ordersResult.rows.forEach(order => {
+            const index = market.outcomes.findIndex(o => o.id === order.outcome_id);
+            if (index !== -1) {
+                currentQuantities[index] += parseFloat(order.amount);
+            }
+        });
+
+        const prices = market.outcomes.map((_, index) => lmsr.calculatePrice(currentQuantities, index));
+
+        // Attach prices to outcomes
+        market.outcomes = market.outcomes.map((o, i) => ({
+            ...o,
+            price: prices[i],
+            quantity: currentQuantities[i]
+        }));
+
+        res.json(market);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const createMarket = async (req, res) => {
+    const { title, description, outcomes, resolution_date } = req.body;
+    try {
+        const result = await db.query(
+            'INSERT INTO markets (title, description, outcomes, resolution_date) VALUES ($1, $2, $3, $4) RETURNING *',
+            [title, description, JSON.stringify(outcomes), resolution_date]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const resolveMarket = async (req, res) => {
+    const { id } = req.params;
+    const { outcomeId } = req.body;
+
+    try {
+        await db.query('BEGIN');
+
+        // 1. Update market status
+        const marketResult = await db.query('UPDATE markets SET status = $1, resolution_date = NOW() WHERE id = $2 RETURNING *', ['resolved', id]);
+        if (marketResult.rows.length === 0) {
+            await db.query('ROLLBACK');
+            return res.status(404).json({ error: 'Market not found' });
+        }
+
+        // 2. Payout winners
+        // Simple payout: 1 share of winning outcome = 1 token. Losing shares = 0.
+        // We need to find all orders for this market and winning outcome? 
+        // No, we need to know final holdings. 
+        // For MVP, we can sum up orders per user for the winning outcome.
+
+        const ordersResult = await db.query('SELECT user_id, SUM(amount) as total_shares FROM orders WHERE market_id = $1 AND outcome_id = $2 GROUP BY user_id', [id, outcomeId]);
+
+        for (const row of ordersResult.rows) {
+            const payout = parseFloat(row.total_shares); // 1 token per share
+            if (payout > 0) {
+                await db.query('UPDATE users SET balance = balance + $1 WHERE id = $2', [payout, row.user_id]);
+                await db.query('INSERT INTO transactions (user_id, type, amount) VALUES ($1, $2, $3)', [row.user_id, 'win', payout]);
+            }
+        }
+
+        await db.query('COMMIT');
+        res.json({ success: true, message: 'Market resolved' });
+
+    } catch (err) {
+        await db.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const placeBet = async (req, res) => {
+    const { id } = req.params;
+    const { outcomeId, amount } = req.body; // amount is shares to buy
+    const userId = req.user.id;
+    console.log('Place Prediction Request:', { id, outcomeId, amount, userId });
+
+    try {
+        // 1. Get market and current quantities
+        const ordersResult = await db.query('SELECT outcome_id, amount FROM orders WHERE market_id = $1', [id]);
+        const marketResult = await db.query('SELECT outcomes FROM markets WHERE id = $1', [id]);
+
+        if (marketResult.rows.length === 0) return res.status(404).json({ error: 'Market not found' });
+
+        const outcomes = marketResult.rows[0].outcomes;
+        const currentQuantities = new Array(outcomes.length).fill(0);
+
+        ordersResult.rows.forEach(order => {
+            const index = outcomes.findIndex(o => o.id === order.outcome_id);
+            if (index !== -1) {
+                currentQuantities[index] += parseFloat(order.amount);
+            }
+        });
+
+        const outcomeIndex = outcomes.findIndex(o => o.id == outcomeId); // Loose equality for string/number match
+        if (outcomeIndex === -1) {
+            console.error('Invalid outcome ID:', outcomeId, 'Available:', outcomes.map(o => o.id));
+            return res.status(400).json({ error: 'Invalid outcome ID' });
+        }
+
+        // 2. Calculate cost
+        const amountNum = parseFloat(amount);
+        if (isNaN(amountNum) || amountNum <= 0) {
+            return res.status(400).json({ error: 'Invalid amount' });
+        }
+        const cost = lmsr.calculateTradeCost(currentQuantities, outcomeIndex, amountNum);
+
+        // 3. Check user balance
+        const userResult = await db.query('SELECT balance FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+        if (userResult.rows[0].balance < cost) {
+            return res.status(400).json({ error: 'Insufficient balance' });
+        }
+
+        // 4. Create order and update balance
+        await db.query('BEGIN');
+        await db.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [cost, userId]);
+        await db.query(
+            'INSERT INTO orders (user_id, market_id, outcome_id, amount, price) VALUES ($1, $2, $3, $4, $5)',
+            [userId, id, outcomeId, amountNum, cost]
+        );
+        await db.query('COMMIT');
+
+        res.json({ success: true, cost, shares: amountNum });
+
+    } catch (err) {
+        await db.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+module.exports = {
+    getMarkets,
+    getMarket,
+    createMarket,
+    placePrediction: placeBet, // Alias for backward compatibility or rename entirely
+    resolveMarket,
+};
