@@ -325,50 +325,8 @@ const MarketDetail = () => {
                                             className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono text-lg"
                                             placeholder="0"
                                             min="1"
-                                        />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
-                                            Shares
-                                        </div>
-                                    </div>
-                                    {predictionCost && (
-                                        <div className="mt-3 flex justify-between items-center text-sm">
-                                            <span className="text-gray-500">{t('market.est_cost')}:</span>
-                                            <span className="font-bold text-gray-900">₳{predictionCost}</span>
-                                        </div>
-                                    )}
-                                    {userBalance && (
-                                        <div className="mt-1 text-right text-xs text-gray-500">
-                                            {t('market.balance')}: ₳{parseFloat(userBalance).toFixed(2)}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Action Button - Hide if resolved */}
-                            {!isResolved && (
-                                <button
-                                    onClick={handlePlacePrediction}
-                                    disabled={!selectedOutcome || !amount}
-                                    className={`w-full py-4 rounded-lg font-bold text-lg shadow-md transition-all transform active:scale-[0.98] ${!selectedOutcome || !amount
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'
-                                        }`}
-                                >
-                                    {selectedOutcome ? `${t('market.predict')} ${selectedOutcome.name}` : t('market.select_outcome')}
-                                </button>
-                            )}
-
-                            {isResolved && (
-                                <div className="bg-gray-50 rounded-lg p-4 text-center text-sm text-gray-500">
-                                    {t('market.payout_distributed')}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default MarketDetail;
+                                            {/* Action Button - Hide if resolved */}
+                                            {!isResolved && (
+                                                <button
+                                                    onClick={handlePlacePrediction}
+                                                    export default MarketDetail;

@@ -38,8 +38,13 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+const runMigrations = require('./run_migrations');
+
+// Run migrations then start server
+runMigrations().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
 });
 
 process.on('uncaughtException', (err) => {

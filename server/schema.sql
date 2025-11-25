@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS markets (
     status VARCHAR(50) DEFAULT 'open', -- open, closed, resolved
     resolution_date TIMESTAMP,
     outcomes JSONB NOT NULL, -- e.g., [{"id": 1, "name": "Yes"}, {"id": 2, "name": "No"}]
+    winner_outcome_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

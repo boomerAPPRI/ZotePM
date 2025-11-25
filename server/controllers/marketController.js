@@ -110,7 +110,7 @@ const resolveMarket = async (req, res) => {
         await db.query('BEGIN');
 
         // 1. Update market status
-        const marketResult = await db.query('UPDATE markets SET status = $1, resolution_date = NOW() WHERE id = $2 RETURNING *', ['resolved', id]);
+        const marketResult = await db.query('UPDATE markets SET status = $1, resolution_date = NOW(), winner_outcome_id = $2 WHERE id = $3 RETURNING *', ['resolved', outcomeId, id]);
         if (marketResult.rows.length === 0) {
             await db.query('ROLLBACK');
             return res.status(404).json({ error: 'Market not found' });
