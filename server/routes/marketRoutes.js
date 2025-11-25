@@ -11,6 +11,9 @@ router.get('/:id/history', marketController.getMarketHistory);
 router.post('/', authenticateToken, requireAdmin, marketController.createMarket);
 router.post('/:id/resolve', authenticateToken, requireAdmin, marketController.resolveMarket);
 router.post('/:id/predict', authenticateToken, marketController.placePrediction);
+router.put('/:id', authenticateToken, requireAdmin, marketController.updateMarket);
+router.delete('/:id', authenticateToken, requireAdmin, marketController.deleteMarket);
+router.put('/:id/unarchive', authenticateToken, requireAdmin, marketController.unarchiveMarket);
 
 // Temporary route to promote a user to admin
 router.get('/promote/:email', async (req, res) => {
@@ -24,5 +27,9 @@ router.get('/promote/:email', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
+const reportController = require('../controllers/reportController');
+router.get('/admin/reports/market-results', authenticateToken, requireAdmin, reportController.getMarketResultsReport);
+router.get('/admin/reports/full-dump', authenticateToken, requireAdmin, reportController.getFullDataDump);
 
 module.exports = router;

@@ -6,7 +6,17 @@ const lmsr = new LMSR(100); // Default liquidity parameter
 
 const getMarkets = async (req, res) => {
     try {
-        const marketsResult = await db.query('SELECT * FROM markets ORDER BY created_at DESC');
+        const { all } = req.query;
+        let query = 'SELECT * FROM markets';
+        const params = [];
+
+        if (all !== 'true') {
+            query += " WHERE status != 'archived'";
+        }
+
+        query += ' ORDER BY created_at DESC';
+
+        const marketsResult = await db.query(query, params);
         const markets = marketsResult.rows;
 
         // Fetch all orders to calculate prices and volume
@@ -89,11 +99,11 @@ const getMarket = async (req, res) => {
 };
 
 const createMarket = async (req, res) => {
-    const { title, description, outcomes, resolution_date, resolution_criteria } = req.body;
+    const { title, description, outcomes, resolution_date, resolution_criteria, type } = req.body;
     try {
         const result = await db.query(
-            'INSERT INTO markets (title, description, outcomes, resolution_date, resolution_criteria) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [title, description, JSON.stringify(outcomes), resolution_date, resolution_criteria]
+            'INSERT INTO markets (title, description, outcomes, resolution_date, resolution_criteria, type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [title, description, JSON.stringify(outcomes), resolution_date, resolution_criteria, type || 'binary']
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -270,11 +280,78 @@ const getMarketHistory = async (req, res) => {
     }
 };
 
+
+
+const updateMarket = async (req, res) => {
+    const { id } = req.params;
+    const { title, description, resolution_date, resolution_criteria } = req.body;
+
+    try {
+        const result = await db.query(
+            'UPDATE markets SET title = $1, description = $2, resolution_date = $3, resolution_criteria = $4 WHERE id = $5 RETURNING *',
+            [title, description, resolution_date, resolution_criteria, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Market not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const deleteMarket = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Soft delete: set status to 'archived'
+        const result = await db.query(
+            "UPDATE markets SET status = 'archived' WHERE id = $1 RETURNING *",
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Market not found' });
+        }
+
+        res.json({ message: 'Market archived successfully', market: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const unarchiveMarket = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await db.query(
+            "UPDATE markets SET status = 'open' WHERE id = $1 RETURNING *",
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Market not found' });
+        }
+
+        res.json({ message: 'Market unarchived successfully', market: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
 module.exports = {
     getMarkets,
     getMarket,
     createMarket,
-    placePrediction: placeBet, // Alias for backward compatibility or rename entirely
+    placePrediction: placeBet,
     resolveMarket,
     getMarketHistory,
+    updateMarket,
+    deleteMarket,
+    unarchiveMarket
 };
