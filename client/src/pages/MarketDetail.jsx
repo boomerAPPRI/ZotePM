@@ -8,6 +8,7 @@ import DOMPurify from 'dompurify';
 import 'react-quill-new/dist/quill.snow.css';
 
 import { getOutcomeColor, getOutcomeStroke } from '../utils/colors';
+import lmsr from '../utils/lmsr';
 
 const MarketDetail = () => {
     const { t } = useTranslation();
@@ -87,11 +88,12 @@ const MarketDetail = () => {
     const handleAmountChange = (e) => {
         const val = e.target.value;
         setAmount(val);
-        if (val && selectedOutcome) {
-            // Simple estimation: price * amount (shares)
-            // In reality, cost increases with quantity (LMSR), but for UI feedback this is okay for small amounts
-            // Or better, call an API to estimate cost? For now, let's just show estimated cost based on current price
-            setPredictionCost((parseFloat(val) * selectedOutcome.price).toFixed(2));
+        if (val && selectedOutcome && !isNaN(parseFloat(val))) {
+            // Use LMSR to calculate accurate cost
+            const outcomeIndex = market.outcomes.findIndex(o => o.id === selectedOutcome.id);
+            const currentQuantities = market.outcomes.map(o => parseFloat(o.quantity || 0));
+            const cost = lmsr.calculateTradeCost(currentQuantities, outcomeIndex, parseFloat(val));
+            setPredictionCost(cost.toFixed(2));
         } else {
             setPredictionCost(null);
         }
@@ -330,7 +332,7 @@ const MarketDetail = () => {
                                     </div>
                                     {predictionCost && (
                                         <div className="mt-3 flex justify-between items-center text-sm">
-                                            <span className="text-gray-500">{t('home.est_cost')}:</span>
+                                            <span className="text-gray-500">{t('market.est_cost')}:</span>
                                             <span className="font-bold text-gray-900">₳{predictionCost}</span>
                                         </div>
                                     )}
