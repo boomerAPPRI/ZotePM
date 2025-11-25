@@ -118,6 +118,11 @@ const Home = () => {
                                             <span className="text-sm font-medium text-gray-700 truncate flex-grow">{outcome.name}</span>
                                             <div className="flex items-center gap-3">
                                                 <span className="text-sm font-bold text-gray-900">{(outcome.price * 100).toFixed(0)}%</span>
+                                                {isResolved && market.winner_outcome_id == outcome.id && (
+                                                    <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                        {t('market.winner') || 'Winner'}
+                                                    </span>
+                                                )}
                                                 {!isResolved && (
                                                     <button
                                                         onClick={(e) => openQuickBuy(e, market, outcome)}

@@ -256,6 +256,7 @@ const getPortfolio = async (req, res) => {
                 p.market_id, 
                 m.title as market_title, 
                 m.status as market_status,
+                m.winner_outcome_id,
                 m.outcomes,
                 p.outcome_id, 
                 p.shares, 
@@ -299,10 +300,15 @@ const getPortfolio = async (req, res) => {
                 });
                 const prices = pos.outcomes.map((_, i) => lmsr.calculatePrice(currentQuantities, i));
 
+                const winnerOutcome = pos.outcomes.find(o => o.id == pos.winner_outcome_id);
+                const winnerOutcomeName = winnerOutcome ? winnerOutcome.name : null;
+
                 marketMap.set(pos.market_id, {
                     marketId: pos.market_id,
                     marketTitle: pos.market_title,
                     marketStatus: pos.market_status,
+                    winnerOutcomeId: pos.winner_outcome_id,
+                    winnerOutcomeName: winnerOutcomeName,
                     outcomes: [],
                     prices: prices
                 });

@@ -98,13 +98,25 @@ const Dashboard = () => {
                                                 }`}>
                                                 {market.marketStatus}
                                             </span>
+                                            {market.marketStatus === 'resolved' && market.winnerOutcomeName && (
+                                                <span className="ml-2 text-sm text-gray-600">
+                                                    {t('market.winner') || 'Winner'}: <span className="font-bold text-gray-900">{market.winnerOutcomeName}</span>
+                                                </span>
+                                            )}
                                         </div>
 
                                         <div className="mt-2 space-y-3">
                                             {market.outcomes.map((outcome, oIdx) => (
                                                 <div key={oIdx} className="pl-4 border-l-2 border-gray-200">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="text-sm font-bold text-gray-900">{outcome.outcomeName}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm font-bold text-gray-900">{outcome.outcomeName}</span>
+                                                            {market.marketStatus === 'resolved' && market.winnerOutcomeId == outcome.outcomeId && (
+                                                                <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full border border-green-200">
+                                                                    {t('market.winner') || 'Winner'}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <span className="text-xs text-gray-500">{t('dashboard.current_price')}: {outcome.currentPrice.toFixed(2)}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center mt-1">
