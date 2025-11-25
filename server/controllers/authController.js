@@ -207,7 +207,7 @@ const changePassword = async (req, res) => {
 const getTransactions = async (req, res) => {
     try {
         // 1. Fetch standard transactions (deposits, withdrawals, wins)
-        const transactionsResult = await db.query('SELECT * FROM transactions WHERE user_id = $1', [req.user.id]);
+        const transactionsResult = await db.query("SELECT * FROM transactions WHERE user_id = $1 AND type != 'bet'", [req.user.id]);
         const transactions = transactionsResult.rows.map(t => ({
             ...t,
             category: 'transaction'
