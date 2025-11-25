@@ -268,12 +268,9 @@ const MarketDetail = () => {
                             {/* Outcome Selection */}
                             <div className="space-y-3">
                                 {market.outcomes.map((outcome, index) => {
-                                    // Logic to highlight winning outcome if we had that data.
-                                    // For now, we assume the backend might return a 'winner' flag or we infer it?
-                                    // The current backend doesn't return which outcome won in the market object explicitly,
-                                    // but we can infer it if the price is 1.0 (100%) or if we add a field.
-                                    // Let's assume for MVP if price is close to 1 it's the winner.
-                                    const isWinner = isResolved && outcome.price > 0.99;
+                                    // Logic to highlight winning outcome
+                                    // Use loose equality to handle potential type mismatches (string vs number)
+                                    const isWinner = isResolved && market.winner_outcome_id == outcome.id;
 
                                     return (
                                         <button
