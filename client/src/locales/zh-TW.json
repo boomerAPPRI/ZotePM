@@ -150,173 +150,19 @@
     },
     "market": {
         "resolution_criteria": "結算標準",
-```json
-{
-            "nav": {
-                "markets": "市場",
-                "dashboard": "儀表板",
-                "leaderboard": "排行榜",
-                "profile": "個人資料",
-                "login": "登入",
-                "logout": "登出"
-            },
-            "home": {
-                "title": "熱門市場",
-                "subtitle": "預測世界上最重要事件的未來。",
-                "politics": "政治",
-                "vol": "交易量",
-                "ends": "結束於",
-                "trade": "交易",
-                "view_results": "查看結果",
-                "quick_buy": "快速預測",
-                "current_price": "當前價格",
-                "shares_to_buy": "購買份額",
-                "predict": "預測",
-                "payout_distributed": "獎金已分發給獲勝的股東。",
-                "resolved": "已結算"
-            },
-            "profile": {
-                "title": "個人資料",
-                "country": "國家",
-                "city": "城市",
-                "age_range": "年齡範圍",
-                "occupation": "職業",
-                "save": "儲存變更",
-                "success": "個人資料更新成功！",
-                "fail": "更新個人資料失敗。",
-                "placeholders": {
-                    "select_country": "選擇國家",
-                    "select_city": "選擇城市",
-                    "select_age": "選擇年齡範圍",
-                    "select_occupation": "選擇職業"
-                },
-                "options": {
-                    "countries": [
-                        "美國",
-                        "台灣",
-                        "日本",
-                        "英國",
-                        "加拿大"
-                    ],
-                    "cities": {
-                        "美國": [
-                            "紐約",
-                            "洛杉磯",
-                            "芝加哥"
-                        ],
-                        "台灣": [
-                            "台北",
-                            "高雄",
-                            "台中"
-                        ],
-                        "日本": [
-                            "東京",
-                            "大阪",
-                            "京都"
-                        ],
-                        "英國": [
-                            "倫敦",
-                            "曼徹斯特",
-                            "伯明翰"
-                        ],
-                        "加拿大": [
-                            "多倫多",
-                            "溫哥華",
-                            "蒙特婁"
-                        ],
-                        "USA": [
-                            "紐約",
-                            "洛杉磯",
-                            "芝加哥"
-                        ],
-                        "Taiwan": [
-                            "台北",
-                            "高雄",
-                            "台中"
-                        ],
-                        "Japan": [
-                            "東京",
-                            "大阪",
-                            "京都"
-                        ],
-                        "UK": [
-                            "倫敦",
-                            "曼徹斯特",
-                            "伯明翰"
-                        ],
-                        "Canada": [
-                            "多倫多",
-                            "溫哥華",
-                            "蒙特婁"
-                        ]
-                    },
-                    "age_ranges": [
-                        "18-24",
-                        "25-34",
-                        "35-44",
-                        "45-54",
-                        "55-64",
-                        "65+"
-                    ],
-                    "occupations": [
-                        "學生",
-                        "工程師",
-                        "設計師",
-                        "經理",
-                        "自由業者",
-                        "其他"
-                    ]
-                }
-            },
-            "dashboard": {
-                "title": "儀表板",
-                "account_info": "帳戶資訊",
-                "full_name": "全名",
-                "balance": "餘額",
-                "your_predictions": "您的預測",
-                "no_predictions": "尚未進行任何預測。",
-                "transaction_history": "交易紀錄",
-                "no_transactions": "尚無交易",
-                "type": "類型",
-                "market": "市場",
-                "details": "詳情",
-                "amount": "金額",
-                "date": "日期",
-                "prediction": "預測",
-                "shares": "份額",
-                "total_equity": "總權益",
-                "cash": "現金",
-                "shares_owned": "持有份額",
-                "current_price": "當前價格",
-                "avg_cost": "平均成本",
-                "orders": "訂單",
-                "country": "國家",
-                "occupation": "職業"
-            },
-            "leaderboard": {
-                "title": "排行榜",
-                "rank": "排名",
-                "user": "用戶",
-                "total_equity": "總權益",
-                "country": "國家",
-                "occupation": "職業"
-            },
-            "market": {
-                "resolution_criteria": "結算標準",
-                "market_trend": "市場趨勢",
-                "vol_24h": "24小時交易量",
-                "resolved": "已結算",
-                "rules": "市場背景",
-                "market_resolved": "市場已結算",
-                "make_prediction": "進行預測",
-                "market_ended": "此市場已結束",
-                "select_outcome": "選擇一個結果進行預測",
-                "shares_for": "購買份額",
-                "balance": "餘額",
-                "predict": "預測",
-                "payout_distributed": "獎金已分發給獲勝的股東。",
-                "est_cost": "預估成本",
-                "winner": "獲勝者"
-            }
-        }
-```
+        "market_trend": "市場趨勢",
+        "vol_24h": "24小時交易量",
+        "resolved": "已結算",
+        "rules": "市場背景",
+        "market_resolved": "市場已結算",
+        "make_prediction": "進行預測",
+        "market_ended": "此市場已結束",
+        "select_outcome": "選擇一個結果進行預測",
+        "shares_for": "購買份額",
+        "balance": "餘額",
+        "predict": "預測",
+        "payout_distributed": "獎金已分發給獲勝的股東。",
+        "est_cost": "預估成本",
+        "winner": "獲勝者"
+    }
+}

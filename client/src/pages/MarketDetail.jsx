@@ -165,10 +165,6 @@ const MarketDetail = () => {
                             {t('market.resolved')}
                         </span>
                     )}
-                    {/* DEBUG INFO */}
-                    <span className="text-xs text-red-500 ml-4">
-                        Debug: WinnerID={market.winner_outcome_id} (Type: {typeof market.winner_outcome_id})
-                    </span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{market.title}</h1>
                 <div className="flex items-center gap-6 text-gray-600">
@@ -294,7 +290,7 @@ const MarketDetail = () => {
                                             <div className="flex items-center gap-2">
                                                 {isWinner && <CheckCircle2 className="w-5 h-5 text-green-600" />}
                                                 <span className={`font-bold ${isResolved && isWinner ? 'text-green-900' : (selectedOutcome?.id === outcome.id ? 'text-indigo-900' : 'text-gray-700')}`}>
-                                                    {outcome.name} <span className="text-xs text-gray-400 font-normal">(ID: {outcome.id})</span>
+                                                    {outcome.name}
                                                 </span>
                                             </div>
                                             <div className="text-right">
@@ -326,8 +322,32 @@ const MarketDetail = () => {
                                             className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono text-lg"
                                             placeholder="0"
                                             min="1"
-                                            {/* Action Button - Hide if resolved */}
-                                            {!isResolved && (
-                                                <button
-                                                    onClick={handlePlacePrediction}
-                                                    export default MarketDetail;
+                                        />
+                                        <div className="absolute right-4 top-3 text-gray-400">
+                                            <DollarSign className="w-6 h-6" />
+                                        </div>
+                                    </div>
+                                    {predictionCost && (
+                                        <div className="text-sm text-gray-500 mt-2 flex justify-between">
+                                            <span>{t('market.est_cost')}:</span>
+                                            <span className="font-medium text-indigo-600">₳{predictionCost}</span>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={handlePlacePrediction}
+                                        className="w-full mt-4 bg-indigo-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-indigo-700 transition-colors shadow-md"
+                                    >
+                                        {t('market.predict')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default MarketDetail;
