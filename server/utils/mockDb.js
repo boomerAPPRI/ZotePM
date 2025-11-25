@@ -16,6 +16,9 @@ class MockDB {
         ];
         this.orders = [];
         this.transactions = [];
+        this.positions = [
+            { id: 1, user_id: 1, market_id: 1, outcome_id: 1, shares: 10, invested: 5.00, updated_at: new Date().toISOString() }
+        ];
     }
 
     async query(text, params = []) {
@@ -161,6 +164,83 @@ class MockDB {
             };
             this.users.push(newUser);
             return { rows: [newUser] };
+        }
+
+        // SELECT positions for Leaderboard
+        if (normalizedText.includes('FROM POSITIONS WHERE SHARES > 0')) {
+            return { rows: this.positions.filter(p => p.shares > 0) };
+        }
+
+        // SELECT positions for Portfolio (with JOIN)
+        if (normalizedText.includes('FROM POSITIONS P') && normalizedText.includes('JOIN MARKETS M')) {
+            const userId = params[0];
+            const userPositions = this.positions.filter(p => p.user_id == userId && p.shares > 0);
+            const rows = userPositions.map(p => {
+                const market = this.markets.find(m => m.id == p.market_id);
+                return {
+                    market_id: p.market_id,
+                    market_title: market ? market.title : 'Unknown',
+                    market_status: market ? market.status : 'open',
+                    outcomes: market ? market.outcomes : [],
+                    outcome_id: p.outcome_id,
+                    shares: p.shares,
+                    invested: p.invested
+                };
+            });
+            return { rows };
+        }
+
+        // INSERT/UPDATE positions
+        if (normalizedText.startsWith('INSERT INTO POSITIONS')) {
+            const userId = params[0];
+            const marketId = params[1];
+            const outcomeId = params[2];
+            const shares = parseFloat(params[3]);
+            const invested = parseFloat(params[4]);
+
+            const existing = this.positions.find(p => p.user_id == userId && p.market_id == marketId && p.outcome_id == outcomeId);
+            if (existing) {
+                existing.shares += shares;
+                existing.invested += invested;
+                existing.updated_at = new Date().toISOString();
+            } else {
+                this.positions.push({
+                    id: this.positions.length + 1,
+                    user_id: userId,
+                    market_id: marketId,
+                    outcome_id: outcomeId,
+                    shares,
+                    invested,
+                    updated_at: new Date().toISOString()
+                });
+            }
+            return { rows: [] };
+        }
+
+        // SELECT users for Leaderboard
+        if (normalizedText.includes('SELECT ID, NAME, BALANCE, COUNTRY, OCCUPATION FROM USERS')) {
+            return { rows: this.users };
+        }
+
+        // SELECT markets for Leaderboard
+        if (normalizedText.includes('SELECT ID, OUTCOMES FROM MARKETS')) {
+            return { rows: this.markets.map(m => ({ id: m.id, outcomes: m.outcomes })) };
+        }
+
+        // SELECT orders for Leaderboard/Portfolio
+        if (normalizedText.includes('SELECT MARKET_ID, OUTCOME_ID, AMOUNT FROM ORDERS')) {
+            if (normalizedText.includes('WHERE MARKET_ID = ANY')) {
+                const marketIds = params[0];
+                return { rows: this.orders.filter(o => marketIds.includes(o.market_id)) };
+            }
+            return { rows: this.orders };
+        }
+
+        // SELECT individual orders for Portfolio
+        if (normalizedText.includes('SELECT ID, MARKET_ID, OUTCOME_ID, AMOUNT, PRICE, TIMESTAMP FROM ORDERS')) {
+            const userId = params[0];
+            const marketIds = params[1];
+            return { rows: this.orders.filter(o => o.user_id == userId && marketIds.includes(o.market_id)) };
         }
 
         console.warn('MockDB: Unhandled query', text);

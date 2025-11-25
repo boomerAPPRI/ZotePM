@@ -1,6 +1,7 @@
 const db = require('../db');
 const LMSR = require('../utils/lmsr');
 
+// Controller for market operations
 const lmsr = new LMSR(100); // Default liquidity parameter
 
 const getMarkets = async (req, res) => {
@@ -8,13 +9,14 @@ const getMarkets = async (req, res) => {
         const marketsResult = await db.query('SELECT * FROM markets ORDER BY created_at DESC');
         const markets = marketsResult.rows;
 
-        // Fetch all orders to calculate prices
+        // Fetch all orders to calculate prices and volume
         // Optimization: In a real app, we might cache this or use a materialized view
-        const ordersResult = await db.query('SELECT market_id, outcome_id, amount FROM orders');
+        const ordersResult = await db.query('SELECT market_id, outcome_id, amount, price FROM orders');
         const orders = ordersResult.rows;
 
         const marketsWithPrices = markets.map(market => {
             const currentQuantities = new Array(market.outcomes.length).fill(0);
+            let volume = 0;
 
             // Filter orders for this market
             const marketOrders = orders.filter(o => o.market_id === market.id);
@@ -24,12 +26,14 @@ const getMarkets = async (req, res) => {
                 if (index !== -1) {
                     currentQuantities[index] += parseFloat(order.amount);
                 }
+                volume += parseFloat(order.price);
             });
 
             const prices = market.outcomes.map((_, index) => lmsr.calculatePrice(currentQuantities, index));
 
             return {
                 ...market,
+                volume,
                 outcomes: market.outcomes.map((o, i) => ({
                     ...o,
                     price: prices[i],
@@ -54,15 +58,17 @@ const getMarket = async (req, res) => {
         }
         const market = marketResult.rows[0];
 
-        // Calculate current prices
-        const ordersResult = await db.query('SELECT outcome_id, amount FROM orders WHERE market_id = $1', [id]);
+        // Calculate current prices and volume
+        const ordersResult = await db.query('SELECT outcome_id, amount, price FROM orders WHERE market_id = $1', [id]);
         const currentQuantities = new Array(market.outcomes.length).fill(0);
+        let volume = 0;
 
         ordersResult.rows.forEach(order => {
             const index = market.outcomes.findIndex(o => o.id === order.outcome_id);
             if (index !== -1) {
                 currentQuantities[index] += parseFloat(order.amount);
             }
+            volume += parseFloat(order.price);
         });
 
         const prices = market.outcomes.map((_, index) => lmsr.calculatePrice(currentQuantities, index));
@@ -73,6 +79,7 @@ const getMarket = async (req, res) => {
             price: prices[i],
             quantity: currentQuantities[i]
         }));
+        market.volume = volume;
 
         res.json(market);
     } catch (err) {
@@ -82,11 +89,11 @@ const getMarket = async (req, res) => {
 };
 
 const createMarket = async (req, res) => {
-    const { title, description, outcomes, resolution_date } = req.body;
+    const { title, description, outcomes, resolution_date, resolution_criteria } = req.body;
     try {
         const result = await db.query(
-            'INSERT INTO markets (title, description, outcomes, resolution_date) VALUES ($1, $2, $3, $4) RETURNING *',
-            [title, description, JSON.stringify(outcomes), resolution_date]
+            'INSERT INTO markets (title, description, outcomes, resolution_date, resolution_criteria) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [title, description, JSON.stringify(outcomes), resolution_date, resolution_criteria]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -186,6 +193,22 @@ const placeBet = async (req, res) => {
             'INSERT INTO orders (user_id, market_id, outcome_id, amount, price) VALUES ($1, $2, $3, $4, $5)',
             [userId, id, outcomeId, amountNum, cost]
         );
+        await db.query(
+            'INSERT INTO transactions (user_id, type, amount) VALUES ($1, $2, $3)',
+            [userId, 'bet', cost]
+        );
+
+        // Update positions table (Upsert)
+        await db.query(`
+            INSERT INTO positions (user_id, market_id, outcome_id, shares, invested)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (user_id, market_id, outcome_id)
+            DO UPDATE SET 
+                shares = positions.shares + EXCLUDED.shares,
+                invested = positions.invested + EXCLUDED.invested,
+                updated_at = CURRENT_TIMESTAMP
+        `, [userId, id, outcomeId, amountNum, cost]);
+
         await db.query('COMMIT');
 
         res.json({ success: true, cost, shares: amountNum });
@@ -197,10 +220,61 @@ const placeBet = async (req, res) => {
     }
 };
 
+const getMarketHistory = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const marketResult = await db.query('SELECT * FROM markets WHERE id = $1', [id]);
+        if (marketResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Market not found' });
+        }
+        const market = marketResult.rows[0];
+
+        // Fetch all orders ordered by timestamp
+        const ordersResult = await db.query('SELECT outcome_id, amount, timestamp FROM orders WHERE market_id = $1 ORDER BY timestamp ASC', [id]);
+        const orders = ordersResult.rows;
+
+        const history = [];
+        const currentQuantities = new Array(market.outcomes.length).fill(0);
+
+        // Initial state at creation time
+        const initialPrices = market.outcomes.map((_, index) => lmsr.calculatePrice(currentQuantities, index));
+        history.push({
+            timestamp: market.created_at,
+            prices: market.outcomes.reduce((acc, outcome, index) => {
+                acc[outcome.name] = initialPrices[index];
+                return acc;
+            }, {})
+        });
+
+        orders.forEach(order => {
+            const index = market.outcomes.findIndex(o => o.id === order.outcome_id);
+            if (index !== -1) {
+                currentQuantities[index] += parseFloat(order.amount);
+
+                const prices = market.outcomes.map((_, i) => lmsr.calculatePrice(currentQuantities, i));
+
+                history.push({
+                    timestamp: order.timestamp,
+                    prices: market.outcomes.reduce((acc, outcome, i) => {
+                        acc[outcome.name] = prices[i];
+                        return acc;
+                    }, {})
+                });
+            }
+        });
+
+        res.json(history);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
 module.exports = {
     getMarkets,
     getMarket,
     createMarket,
     placePrediction: placeBet, // Alias for backward compatibility or rename entirely
     resolveMarket,
+    getMarketHistory,
 };

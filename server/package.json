@@ -7,7 +7,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "node migrate.js && node index.js",
+    "start": "node migrate.js && node migrate_positions.js && node migrate_resolution_criteria.js && node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

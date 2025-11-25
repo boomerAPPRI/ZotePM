@@ -11,11 +11,19 @@ app.use(cors());
 
 app.use(express.json());
 
+// Disable caching for API routes
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+});
+
 const authRoutes = require('./routes/authRoutes');
 const marketRoutes = require('./routes/marketRoutes');
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
 
 app.use('/auth', authRoutes);
 app.use('/api/markets', marketRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 const path = require('path');
 

@@ -12,18 +12,15 @@ do {
 
 Write-Host "Instance is ready!"
 
-Write-Host "Setting postgres user password..."
-& $gcloud sql users set-password postgres --instance=$instance --password="SecureP@ssw0rd2025!" --quiet
-
-Write-Host "Creating database appri..."
-& $gcloud sql databases create appri --instance=$instance --quiet
+Write-Host "Creating database appri_staging..."
+& $gcloud sql databases create appri_staging --instance=$instance --quiet
 
 Write-Host "Building client..."
 & npm run build --prefix client
 
-Write-Host "Deploying to App Engine..."
+Write-Host "Deploying to App Engine (Staging)..."
 Set-Location server
-& $gcloud app deploy --quiet
+& $gcloud app deploy app-staging.yaml --quiet
 Set-Location ..
 
-Write-Host "Deployment complete!"
+Write-Host "Deployment complete! Access staging at: https://staging-dot-prediction-market-project.uc.r.appspot.com"

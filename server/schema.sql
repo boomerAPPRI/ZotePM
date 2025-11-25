@@ -43,5 +43,24 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 -- Migrations
 ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS age_range VARCHAR(50);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;
+
 -- Set first user as admin (optional, for bootstrapping)
 UPDATE users SET role = 'admin' WHERE id = (SELECT id FROM users ORDER BY id ASC LIMIT 1);
+
+-- Positions table (Denormalized holdings)
+CREATE TABLE IF NOT EXISTS positions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    market_id INTEGER REFERENCES markets(id),
+    outcome_id INTEGER NOT NULL,
+    shares DECIMAL(10, 2) DEFAULT 0.00,
+    invested DECIMAL(10, 2) DEFAULT 0.00,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, market_id, outcome_id)
+);

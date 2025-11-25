@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CheckCircle2, List, Calendar, Hash, BarChart3, MessageSquare, Plus, X } from 'lucide-react';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const Admin = () => {
     const [markets, setMarkets] = useState([]);
@@ -10,6 +12,7 @@ const Admin = () => {
     // Form State
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [resolutionCriteria, setResolutionCriteria] = useState('');
     const [outcomes, setOutcomes] = useState([{ id: 1, name: '' }, { id: 2, name: '' }]);
     const [resolutionDate, setResolutionDate] = useState('');
 
@@ -61,22 +64,28 @@ const Admin = () => {
     const handleCreateMarket = async (e) => {
         e.preventDefault();
         try {
+            const token = localStorage.getItem('token');
             await axios.post('/api/markets', {
                 title,
                 description,
+                resolution_criteria: resolutionCriteria,
                 outcomes: outcomes.filter(o => o.name.trim() !== ''),
                 resolution_date: resolutionDate,
                 type: selectedType
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
             });
             alert('Market created!');
             fetchMarkets();
             setStep(1);
             setTitle('');
             setDescription('');
+            setResolutionCriteria('');
             setOutcomes([{ id: 1, name: '' }, { id: 2, name: '' }]);
             setResolutionDate('');
         } catch (error) {
             console.error('Error creating market:', error);
+            alert('Failed to create market: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -99,11 +108,15 @@ const Admin = () => {
 
     const handleResolve = async (marketId, outcomeId) => {
         try {
-            await axios.post(`/api/markets/${marketId}/resolve`, { outcomeId });
+            const token = localStorage.getItem('token');
+            await axios.post(`/api/markets/${marketId}/resolve`, { outcomeId }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             alert('Market resolved!');
             fetchMarkets();
         } catch (error) {
             console.error('Error resolving market:', error);
+            alert('Failed to resolve market');
         }
     };
 
@@ -179,13 +192,24 @@ const Admin = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
-                            <textarea
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Background (Optional)</label>
+                            <ReactQuill
+                                theme="snow"
                                 value={description}
-                                onChange={e => setDescription(e.target.value)}
-                                rows={3}
-                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-3 border"
-                                placeholder="Provide background info and resolution criteria..."
+                                onChange={setDescription}
+                                className="bg-white"
+                                placeholder="Provide background info..."
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Resolution Criteria</label>
+                            <ReactQuill
+                                theme="snow"
+                                value={resolutionCriteria}
+                                onChange={setResolutionCriteria}
+                                className="bg-white"
+                                placeholder="Define exactly how this market will be resolved..."
                             />
                         </div>
 

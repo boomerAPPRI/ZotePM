@@ -1,0 +1,142 @@
+{
+    "nav": {
+        "markets": "Markets",
+        "dashboard": "Dashboard",
+        "leaderboard": "Leaderboard",
+        "profile": "Profile",
+        "login": "Login",
+        "logout": "Logout"
+    },
+    "home": {
+        "title": "Trending Markets",
+        "subtitle": "Predict the future on the world's most important events.",
+        "politics": "Politics",
+        "vol": "Vol",
+        "ends": "Ends",
+        "trade": "Trade",
+        "view_results": "View Results",
+        "quick_buy": "Quick Predict",
+        "current_price": "Current Price",
+        "shares_to_buy": "Shares to buy",
+        "predict": "Predict",
+        "payout_distributed": "Payouts have been distributed to winning shareholders.",
+        "resolved": "RESOLVED"
+    },
+    "profile": {
+        "title": "User Profile",
+        "country": "Country",
+        "city": "City",
+        "age_range": "Age Range",
+        "occupation": "Occupation",
+        "save": "Save Changes",
+        "success": "Profile updated successfully!",
+        "fail": "Failed to update profile.",
+        "placeholders": {
+            "select_country": "Select Country",
+            "select_city": "Select City",
+            "select_age": "Select Age Range",
+            "select_occupation": "Select Occupation"
+        },
+        "options": {
+            "countries": [
+                "USA",
+                "Taiwan",
+                "Japan",
+                "UK",
+                "Canada"
+            ],
+            "cities": {
+                "USA": [
+                    "New York",
+                    "Los Angeles",
+                    "Chicago"
+                ],
+                "Taiwan": [
+                    "Taipei",
+                    "Kaohsiung",
+                    "Taichung"
+                ],
+                "Japan": [
+                    "Tokyo",
+                    "Osaka",
+                    "Kyoto"
+                ],
+                "UK": [
+                    "London",
+                    "Manchester",
+                    "Birmingham"
+                ],
+                "Canada": [
+                    "Toronto",
+                    "Vancouver",
+                    "Montreal"
+                ]
+            },
+            "age_ranges": [
+                "18-24",
+                "25-34",
+                "35-44",
+                "45-54",
+                "55-64",
+                "65+"
+            ],
+            "occupations": [
+                "Student",
+                "Engineer",
+                "Designer",
+                "Manager",
+                "Freelancer",
+                "Other"
+            ]
+        }
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "account_info": "Account Information",
+        "full_name": "Full name",
+        "balance": "Balance",
+        "your_predictions": "Your Predictions",
+        "no_predictions": "No predictions placed yet.",
+        "transaction_history": "Transaction History",
+        "no_transactions": "No transactions yet",
+        "type": "Type",
+        "market": "Market",
+        "details": "Details",
+        "amount": "Amount",
+        "date": "Date",
+        "prediction": "Prediction",
+        "shares": "shares",
+        "total_equity": "Total Equity",
+        "cash": "Cash",
+        "shares_owned": "Shares",
+        "current_price": "Current Price",
+        "avg_cost": "Avg Cost",
+        "orders": "Orders",
+        "country": "Country",
+        "occupation": "Occupation"
+    },
+    "leaderboard": {
+        "title": "Leaderboard",
+        "rank": "Rank",
+        "user": "User",
+        "total_equity": "Total Equity",
+        "country": "Country",
+        "occupation": "Occupation"
+    },
+    "market": {
+        "resolution_criteria": "Resolution Criteria",
+        "market_trend": "Market Trend",
+        "vol_24h": "24H Volume",
+        "resolved": "Resolved",
+        "rules": "Market Background",
+        "market_resolved": "Market Resolved",
+        "make_prediction": "Make a Prediction",
+        "market_ended": "This market has ended",
+        "select_outcome": "Select an outcome to predict",
+        "shares_for": "Shares for",
+        "balance": "Balance",
+        "predict": "Predict",
+        "payout_distributed": "Payouts have been distributed to winning shareholders.",
+        "est_cost": "Est. Cost"
+    }
+}
