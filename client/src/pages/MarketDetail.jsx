@@ -165,6 +165,10 @@ const MarketDetail = () => {
                             {t('market.resolved')}
                         </span>
                     )}
+                    {/* DEBUG INFO */}
+                    <span className="text-xs text-red-500 ml-4">
+                        Debug: WinnerID={market.winner_outcome_id} (Type: {typeof market.winner_outcome_id})
+                    </span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{market.title}</h1>
                 <div className="flex items-center gap-6 text-gray-600">
@@ -290,7 +294,7 @@ const MarketDetail = () => {
                                             <div className="flex items-center gap-2">
                                                 {isWinner && <CheckCircle2 className="w-5 h-5 text-green-600" />}
                                                 <span className={`font-bold ${isResolved && isWinner ? 'text-green-900' : (selectedOutcome?.id === outcome.id ? 'text-indigo-900' : 'text-gray-700')}`}>
-                                                    {outcome.name}
+                                                    {outcome.name} <span className="text-xs text-gray-400 font-normal">(ID: {outcome.id})</span>
                                                 </span>
                                             </div>
                                             <div className="text-right">
