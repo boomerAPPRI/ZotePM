@@ -65,3 +65,23 @@ CREATE TABLE IF NOT EXISTS positions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, market_id, outcome_id)
 );
+
+-- System Settings table
+CREATE TABLE IF NOT EXISTS system_settings (
+    key VARCHAR(255) PRIMARY KEY,
+    value TEXT
+);
+
+-- Feedback table
+CREATE TABLE IF NOT EXISTS feedback (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    type VARCHAR(50) NOT NULL, -- bug, feature, general
+    description TEXT,
+    screenshot_url TEXT,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Initialize feedback setting
+INSERT INTO system_settings (key, value) VALUES ('feedback_enabled', 'true') ON CONFLICT DO NOTHING;

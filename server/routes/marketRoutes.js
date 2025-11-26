@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const marketController = require('../controllers/marketController');
-const authenticateToken = require('../middleware/authMiddleware');
-const requireAdmin = require('../middleware/adminMiddleware');
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 const db = require('../db');
 
 router.get('/', marketController.getMarkets);

@@ -10,6 +10,7 @@ const Admin = () => {
     const [editingMarket, setEditingMarket] = useState(null);
     const [markets, setMarkets] = useState([]);
 
+
     // Form State
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -233,38 +234,127 @@ const Admin = () => {
         }
     };
 
+    const [feedbackEnabled, setFeedbackEnabled] = useState(false);
+    const [feedbackList, setFeedbackList] = useState([]);
+
+    useEffect(() => {
+        fetchMarkets();
+        if (activeTab === 'settings') fetchSettings();
+        if (activeTab === 'feedback') fetchFeedback();
+    }, [activeTab]);
+
+    const fetchSettings = async () => {
+        try {
+            const response = await axios.get('/api/feedback/status');
+            setFeedbackEnabled(response.data.enabled);
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+        }
+    };
+
+    const fetchFeedback = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('/api/admin/feedback', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setFeedbackList(response.data);
+        } catch (error) {
+            console.error('Error fetching feedback:', error);
+        }
+    };
+
+    const toggleFeedback = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const newState = !feedbackEnabled;
+            await axios.post('/api/admin/feedback/toggle', { enabled: newState }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setFeedbackEnabled(newState);
+            alert(`Feedback system ${newState ? 'enabled' : 'disabled'}`);
+        } catch (error) {
+            console.error('Error toggling feedback:', error);
+            alert('Failed to update settings');
+        }
+    };
+
+    const openScreenshot = (dataUrl) => {
+        try {
+            // Split metadata from data
+            const [metadata, base64Data] = dataUrl.split(',');
+            const contentType = metadata.match(/:(.*?);/)[1];
+
+            // Convert base64 to blob
+            const byteCharacters = atob(base64Data);
+            const byteArrays = [];
+            const sliceSize = 1024;
+
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                const slice = byteCharacters.slice(offset, offset + sliceSize);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+
+            const blob = new Blob(byteArrays, { type: contentType });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        } catch (error) {
+            console.error("Error opening screenshot:", error);
+            alert("Failed to open screenshot.");
+        }
+    };
+
     return (
         <div className="p-6 max-w-5xl mx-auto">
             <h1 className="text-3xl font-bold mb-8 text-gray-900">Admin Dashboard</h1>
 
-            <div className="flex gap-4 mb-8 border-b border-gray-200 pb-4">
+            <div className="flex gap-4 mb-8 border-b border-gray-200 pb-4 overflow-x-auto">
                 <button
                     onClick={() => { setActiveTab('create'); resetForm(); setStep(1); }}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'create' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'create' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                     Create Market
                 </button>
                 <button
                     onClick={() => setActiveTab('manage')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'manage' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                     Manage Markets
                 </button>
                 <button
                     onClick={() => setActiveTab('archived')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'archived' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'archived' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                     Archived Markets
                 </button>
                 <button
                     onClick={() => setActiveTab('reports')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'reports' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'reports' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                     Reports
                 </button>
+                <button
+                    onClick={() => setActiveTab('feedback')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'feedback' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                    Feedback
+                </button>
+                <button
+                    onClick={() => setActiveTab('settings')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                    Settings
+                </button>
             </div>
 
+            {/* ... Existing Tabs ... */}
             {activeTab === 'create' && (
+                // ... (Keep existing create tab content)
                 <div>
                     {step === 1 && (
                         <div>
@@ -512,6 +602,68 @@ const Admin = () => {
                             <Hash className="w-4 h-4" /> Download JSON
                         </button>
                     </div>
+                </div>
+            )}
+
+            {activeTab === 'settings' && (
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h3 className="font-semibold text-lg text-gray-900 mb-4">System Settings</h3>
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <h4 className="font-medium text-gray-900">Beta Feedback System</h4>
+                            <p className="text-sm text-gray-500">Enable or disable the floating feedback widget for all users.</p>
+                        </div>
+                        <button
+                            onClick={toggleFeedback}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${feedbackEnabled ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                        >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${feedbackEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'feedback' && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-100">
+                    {feedbackList.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500">No feedback reports found.</div>
+                    ) : (
+                        feedbackList.map(item => (
+                            <div key={item.id} className="p-6">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${item.type === 'bug' ? 'bg-red-100 text-red-700' : item.type === 'feature' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+                                            {item.type.toUpperCase()}
+                                        </span>
+                                        <span className="text-sm text-gray-500">{new Date(item.created_at).toLocaleString()}</span>
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                        User: {item.user_name || 'Anonymous'} ({item.user_email || 'N/A'})
+                                    </div>
+                                </div>
+                                <p className="text-gray-800 mb-4">{item.description}</p>
+                                {item.screenshot_url && (
+                                    <div className="mb-4">
+                                        <p className="text-xs font-medium text-gray-500 mb-1">Screenshot:</p>
+                                        <button
+                                            onClick={() => openScreenshot(item.screenshot_url)}
+                                            className="block hover:opacity-90 transition-opacity focus:outline-none"
+                                        >
+                                            <img src={item.screenshot_url} alt="Screenshot" className="h-32 object-cover rounded border border-gray-200" />
+                                        </button>
+                                    </div>
+                                )}
+                                {item.metadata && (
+                                    <details className="text-xs text-gray-500">
+                                        <summary className="cursor-pointer hover:text-gray-700">View Metadata</summary>
+                                        <pre className="mt-2 bg-gray-50 p-2 rounded overflow-x-auto">
+                                            {JSON.stringify(item.metadata, null, 2)}
+                                        </pre>
+                                    </details>
+                                )}
+                            </div>
+                        ))
+                    )}
                 </div>
             )}
         </div>

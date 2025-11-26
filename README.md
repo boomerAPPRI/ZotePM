@@ -1,19 +1,3 @@
-# APPRI - Prediction Market Platform
-
-APPRI is a prediction market platform where users can bet tokens on various events (Technology, Politics, Economics, etc.).
-
-## Features
-
-- **Admin-created Markets**: Curated markets for high-quality predictions.
-- **LMSR Pricing**: Logarithmic Market Scoring Rule for dynamic and fair pricing.
-- **Line Login**: Seamless authentication for users.
-- **Multi-language Support**: English and Traditional Chinese.
-
-## Tech Stack
-
-- **Frontend**: React, Vite, TailwindCSS
-- **Backend**: Node.js, Express
-- **Database**: PostgreSQL
 - **Deployment**: Azure
 
 ## Getting Started
