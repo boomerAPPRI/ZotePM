@@ -88,7 +88,7 @@ const Home = () => {
                 {markets.map(market => {
                     const isResolved = market.status === 'resolved';
                     return (
-                        <Link to={`/market/${market.id}`} key={market.id} className="group block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full">
+                        <Link to={`/markets/${market.id}`} key={market.id} className="group block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full">
                             <div className="p-5 flex-grow">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-2">

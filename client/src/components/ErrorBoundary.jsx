@@ -11,20 +11,30 @@ class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, errorInfo) {
-        this.setState({ error, errorInfo });
+        this.setState({
+            error: error,
+            errorInfo: errorInfo
+        });
         console.error("Uncaught error:", error, errorInfo);
     }
 
     render() {
         if (this.state.hasError) {
             return (
-                <div style={{ padding: '20px', color: 'red' }}>
-                    <h1>Something went wrong.</h1>
-                    <details style={{ whiteSpace: 'pre-wrap' }}>
-                        {this.state.error && this.state.error.toString()}
-                        <br />
-                        {this.state.errorInfo && this.state.errorInfo.componentStack}
-                    </details>
+                <div className="p-8 max-w-4xl mx-auto mt-10 bg-red-50 border border-red-200 rounded-xl">
+                    <h1 className="text-2xl font-bold text-red-800 mb-4">Something went wrong.</h1>
+                    <div className="bg-white p-4 rounded-lg border border-red-100 overflow-auto">
+                        <p className="font-mono text-red-600 mb-2">{this.state.error && this.state.error.toString()}</p>
+                        <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                            {this.state.errorInfo && this.state.errorInfo.componentStack}
+                        </pre>
+                    </div>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                        Reload Page
+                    </button>
                 </div>
             );
         }

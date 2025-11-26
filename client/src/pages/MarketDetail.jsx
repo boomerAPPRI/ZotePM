@@ -9,6 +9,7 @@ import 'react-quill-new/dist/quill.snow.css';
 
 import { getOutcomeColor, getOutcomeStroke } from '../utils/colors';
 import lmsr from '../utils/lmsr';
+import CommentSection from '../components/CommentSection';
 
 const MarketDetail = () => {
     const { t } = useTranslation();
@@ -250,6 +251,8 @@ const MarketDetail = () => {
                             </div>
                         )}
                     </div>
+                    {/* Comment Section */}
+                    <CommentSection marketId={id} />
                 </div>
 
                 {/* Right Column: Betting Interface */}
@@ -350,4 +353,14 @@ const MarketDetail = () => {
     );
 };
 
-export default MarketDetail;
+
+
+import ErrorBoundary from '../components/ErrorBoundary';
+
+export default function MarketDetailWithBoundary() {
+    return (
+        <ErrorBoundary>
+            <MarketDetail />
+        </ErrorBoundary>
+    );
+}

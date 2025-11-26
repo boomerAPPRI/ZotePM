@@ -39,6 +39,36 @@ app.post('/api/feedback', authenticateToken, submitFeedback);
 app.get('/api/admin/feedback', authenticateToken, requireAdmin, getFeedback);
 app.post('/api/admin/feedback/toggle', authenticateToken, requireAdmin, toggleFeedbackStatus);
 
+// Debug Routes
+app.get('/api/debug/force-migrate-comments', async (req, res) => {
+    const db = require('./db');
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS comments (
+                id SERIAL PRIMARY KEY,
+                market_id INTEGER REFERENCES markets(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        await db.query('CREATE INDEX IF NOT EXISTS idx_comments_market_id ON comments(market_id);');
+        res.json({ success: true, message: 'Comments table created' });
+    } catch (error) {
+        res.status(500).json({ error: error.message, stack: error.stack });
+    }
+});
+
+app.get('/api/debug/check-comments-table', async (req, res) => {
+    const db = require('./db');
+    try {
+        const result = await db.query("SELECT to_regclass('public.comments');");
+        res.json({ exists: !!result.rows[0].to_regclass });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 const path = require('path');
 
 app.use(express.static(path.join(__dirname, 'public')));

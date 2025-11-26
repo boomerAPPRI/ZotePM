@@ -1,15 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const marketController = require('../controllers/marketController');
+const { getComments, postComment, deleteComment } = require('../controllers/commentController');
 const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 const db = require('../db');
 
+// Public routes
 router.get('/', marketController.getMarkets);
 router.get('/:id', marketController.getMarket);
 router.get('/:id/history', marketController.getMarketHistory);
+router.get('/:id/comments', getComments);
+
+// Protected routes
 router.post('/', authenticateToken, requireAdmin, marketController.createMarket);
 router.post('/:id/resolve', authenticateToken, requireAdmin, marketController.resolveMarket);
 router.post('/:id/predict', authenticateToken, marketController.placePrediction);
+router.post('/:id/comments', authenticateToken, postComment);
+router.delete('/:id/comments/:commentId', authenticateToken, deleteComment);
 router.put('/:id', authenticateToken, requireAdmin, marketController.updateMarket);
 router.delete('/:id', authenticateToken, requireAdmin, marketController.deleteMarket);
 router.put('/:id/unarchive', authenticateToken, requireAdmin, marketController.unarchiveMarket);
