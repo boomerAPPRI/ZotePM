@@ -20,7 +20,9 @@
         "shares_to_buy": "購買份額",
         "predict": "預測",
         "payout_distributed": "獎金已分發給獲勝的股東。",
-        "resolved": "已結算"
+        "resolved": "已結算",
+        "est_cost": "預估成本",
+        "confirm": "確認預測"
     },
     "profile": {
         "title": "個人資料",
@@ -164,5 +166,41 @@
         "payout_distributed": "獎金已分發給獲勝的股東。",
         "est_cost": "預估成本",
         "winner": "獲勝者"
+    },
+    "login_page": {
+        "sign_in_title": "登入您的帳戶",
+        "create_account_title": "建立您的帳戶",
+        "or": "或",
+        "sign_in_existing": "登入現有帳戶",
+        "create_new": "建立新帳戶",
+        "name": "姓名",
+        "email": "電子郵件地址",
+        "password": "密碼",
+        "register_button": "註冊",
+        "sign_in_button": "登入",
+        "continue_with": "或繼續使用",
+        "sign_in_line": "使用 Line 登入",
+        "auth_error": "驗證錯誤",
+        "registration_failed": "註冊失敗",
+        "login_failed": "登入失敗"
+    },
+    "feedback": {
+        "button": "回饋",
+        "title": "發送回饋",
+        "type": "類型",
+        "types": {
+            "bug": "回報錯誤",
+            "feature": "功能請求",
+            "general": "一般回饋"
+        },
+        "description": "描述",
+        "placeholder": "描述問題或想法...",
+        "screenshot": "螢幕截圖",
+        "remove": "移除",
+        "capture": "擷取螢幕",
+        "submit": "提交回饋",
+        "success": "感謝您的回饋！",
+        "error": "提交回饋失敗",
+        "capture_error": "擷取螢幕失敗"
     }
 }
