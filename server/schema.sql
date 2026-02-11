@@ -17,8 +17,10 @@ CREATE TABLE IF NOT EXISTS markets (
     description TEXT,
     status VARCHAR(50) DEFAULT 'open', -- open, closed, resolved
     resolution_date TIMESTAMP,
+    resolution_criteria TEXT,
     outcomes JSONB NOT NULL, -- e.g., [{"id": 1, "name": "Yes"}, {"id": 2, "name": "No"}]
     winner_outcome_id INTEGER,
+    type VARCHAR(50) DEFAULT 'binary', -- binary, multichoice
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

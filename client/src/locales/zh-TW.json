@@ -182,7 +182,8 @@
         "sign_in_line": "使用 Line 登入",
         "auth_error": "驗證錯誤",
         "registration_failed": "註冊失敗",
-        "login_failed": "登入失敗"
+        "login_failed": "登入失敗",
+        "forgot_password": "忘記密碼？"
     },
     "feedback": {
         "button": "回饋",

@@ -25,7 +25,34 @@ const Navbar = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
                     <div className="flex-shrink-0 flex items-center gap-2">
-                        <Link to="/" className="text-2xl font-bold text-indigo-600 tracking-tight">ZotePM</Link>
+                        <Link to="/" className="text-2xl font-bold text-indigo-600 tracking-tight">
+                            {import.meta.env.MODE === 'piano' ? (
+                                <span className="flex items-center gap-2 text-emerald-600">
+                                    🎹 Piano Practice <span className="text-xs bg-emerald-100 text-emerald-800 px-2 rounded-full">Student</span>
+                                </span>
+                            ) : import.meta.env.MODE === 'superbowl' ? (
+                                <div className="flex items-center gap-3">
+                                    {/* Seahawks Style User Icon */}
+                                    <svg width="32" height="32" viewBox="0 0 24 24" className="fill-current text-[#002244] stroke-[#69BE28] stroke-1">
+                                        <path d="M2.5 12c0-4.4 3.6-8 8-8 4.4 0 8 3.6 8 8 0 4.4-3.6 8-8 8-4.4 0-8-3.6-8-8z" />
+                                        <path d="M8 12l2 2 4-4" stroke="white" strokeWidth="2" fill="none" />
+                                    </svg>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl font-black text-slate-800 tracking-tighter">SUPER BOWL LIX</span>
+                                        <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-sm animate-pulse">LIVE NOW</span>
+                                    </div>
+
+                                    {/* Patriots Style User Icon */}
+                                    <svg width="32" height="32" viewBox="0 0 24 24" className="fill-current text-[#002244] stroke-[#C60C30] stroke-1">
+                                        <path d="M21.5 12c0 4.4-3.6 8-8 8-4.4 0-8-3.6-8-8 0-4.4 3.6-8 8-8 4.4 0 8 3.6 8 8z" />
+                                        <path d="M12 8v8M8 12h8" stroke="white" strokeWidth="2" fill="none" />
+                                    </svg>
+                                </div>
+                            ) : (
+                                "ZotePM"
+                            )}
+                        </Link>
                     </div>
 
                     {/* Desktop Navigation */}

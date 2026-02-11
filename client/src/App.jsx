@@ -12,6 +12,8 @@ import Profile from './pages/Profile';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import FeedbackWidget from './components/FeedbackWidget';
+import HowToPlayWidget from './components/HowToPlayWidget';
+import HowToPlay from './pages/HowToPlay'; // Keep page route as backup or remove? I'll allow it side-by-side but Widget is main.
 
 function App() {
   return (
@@ -30,8 +32,10 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/how-to-play" element={<HowToPlay />} />
           </Routes>
           <FeedbackWidget />
+          {import.meta.env.MODE === 'superbowl' && <HowToPlayWidget />}
         </div>
       </Router>
     </AuthProvider>

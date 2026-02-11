@@ -93,9 +93,11 @@ const Home = () => {
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                                            POL
+                                            {import.meta.env.MODE === 'superbowl' ? 'NFL' : 'POL'}
                                         </div>
-                                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t('home.politics')}</span>
+                                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            {import.meta.env.MODE === 'superbowl' ? 'SPORTS' : t('home.politics')}
+                                        </span>
                                         {isResolved && (
                                             <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
                                                 {t('market.resolved')}

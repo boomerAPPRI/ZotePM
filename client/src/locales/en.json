@@ -157,7 +157,8 @@
         "sign_in_line": "Sign in with Line",
         "auth_error": "Auth error",
         "registration_failed": "Registration failed",
-        "login_failed": "Login failed"
+        "login_failed": "Login failed",
+        "forgot_password": "Forgot password?"
     },
     "feedback": {
         "button": "Feedback",

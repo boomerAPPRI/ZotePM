@@ -5,6 +5,7 @@ const db = require('../db');
 const crypto = require('crypto');
 const LMSR = require('../utils/lmsr');
 const lmsr = new LMSR(100);
+const sendEmail = require('../utils/email');
 
 const LINE_AUTH_URL = 'https://access.line.me/oauth2/v2.1/authorize';
 const LINE_TOKEN_URL = 'https://api.line.me/oauth2/v2.1/token';
@@ -157,10 +158,54 @@ const forgotPassword = async (req, res) => {
 
         await db.query('UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE email = $3', [token, expires, email]);
 
-        // In a real app, send email here. For MVP, log to console.
-        console.log(`[MOCK EMAIL] Password reset token for ${email}: ${token}`);
+        const user = userResult.rows[0]; // Fix: Define user variable
+        const resetUrl = `${req.protocol}://${req.get('host')}/reset-password?token=${token}`;
+        // Since frontend is separate usually, we should use frontend URL. 
+        // Assuming client is on same domain or we know the URL.
+        // For App Engine, it's same domain.
 
-        res.json({ message: 'Password reset email sent (check console)' });
+        const frontendUrl = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
+        const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+        const message = `Hello,\n\nWe received a request to reset the password for your ZotePM account associated with this email address.\n\nClick the link below to reset your password:\n${resetLink}\n\nThis link is valid for 1 hour.\n\nIf you did not request a password reset, please ignore this email.\n\nBest regards,\nThe ZotePM Team`;
+
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: 'Reset your ZotePM Password',
+                message,
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #333;">Password Reset Request</h2>
+                        <p>Hello,</p>
+                        <p>We received a request to reset the password for your <strong>ZotePM</strong> account.</p>
+                        <p>Click the button below to set a new password:</p>
+                        <p style="text-align: center; margin: 30px 0;">
+                            <a href="${resetLink}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Reset Password</a>
+                        </p>
+                        <p>Or copy and paste this link into your browser:</p>
+                        <p><a href="${resetLink}">${resetLink}</a></p>
+                        <p>This link expires in 1 hour.</p>
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="color: #666; font-size: 12px;">If you didn't request this, please ignore this email.</p>
+                    </div>
+                `
+            });
+
+            res.status(200).json({
+                status: 'success',
+                message: 'Token sent to email! (Check spam folder)',
+                token: process.env.NODE_ENV === 'development' ? token : undefined // Hide token in prod
+            });
+        } catch (err) {
+            console.error("Email send failed (likely due to missing credentials):", err);
+            // Fallback for testing/MVP without SMTP:
+            return res.status(200).json({
+                status: 'warning',
+                message: 'Email failed to send (check server logs for SMTP error). Here is the token for testing:',
+                token: token
+            });
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

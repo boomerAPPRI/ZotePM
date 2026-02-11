@@ -1,29 +1,46 @@
-$gcloud = "C:\Users\BoomerChang\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd"
-$instance = "appri-db-2"
-$region = "us-central1"
-$project = "prediction-market-project"
+# Default Deployment Script (ZotePM)
+# Usage: .\deploy_gcp.ps1
 
-Write-Host "Waiting for Cloud SQL instance $instance to be ready..."
-do {
-    $status = & $gcloud sql instances describe $instance --format="value(state)"
-    Write-Host "Status: $status"
-    if ($status -ne "RUNNABLE") { Start-Sleep -Seconds 10 }
-} until ($status -eq "RUNNABLE")
+$ErrorActionPreference = 'Stop'
 
-Write-Host "Instance is ready!"
+Write-Host "Starting Default Instance Deployment..." -ForegroundColor Green
 
-Write-Host "Setting postgres user password..."
-& $gcloud sql users set-password postgres --instance=$instance --password="SecureP@ssw0rd2025!" --quiet
+# 1. Clean Build Directory
+if (Test-Path "server\public") {
+    Write-Host "Cleaning previous build..."
+    Remove-Item -Path "server\public" -Recurse -Force
+}
+New-Item -ItemType Directory -Force -Path "server\public" | Out-Null
 
-Write-Host "Creating database appri..."
-& $gcloud sql databases create appri --instance=$instance --quiet
+# 2. Build Client (Default Mode)
+Set-Location client
+Write-Host "Building client (Mode: Default)..."
+cmd /c "npm run build"
 
-Write-Host "Building client..."
-& npm run build --prefix client
-
-Write-Host "Deploying to App Engine..."
-Set-Location server
-& $gcloud app deploy --quiet
+# Vite builds directly to ../server/public
+if (!(Test-Path "..\server\public\index.html")) {
+    Write-Error "Client build failed! ..\server\public\index.html not found."
+}
 Set-Location ..
 
-Write-Host "Deployment complete!"
+# 3. Verify Server Public Content
+if (!(Test-Path "server\public\index.html")) {
+    Write-Error "Deployment preparation failed! server\public\index.html missing."
+}
+
+# 4. Connect to GCP and Create Database (Idempotent)
+Write-Host "Connecting to GCP SQL Proxy..." 
+$DB_INSTANCE = "appri-db-2"
+$DB_NAME = "appri"
+
+Write-Host "Creating database $DB_NAME... (Ignore error if exists)"
+cmd /c "gcloud sql databases create $DB_NAME --instance=$DB_INSTANCE 2>&1"
+# Ignore error if exists
+
+# 5. Deploy to App Engine (Default Service)
+Set-Location server
+Write-Host "Deploying to App Engine (Service: default)..."
+cmd /c "gcloud app deploy app.yaml --quiet"
+
+Write-Host "Deployment Complete!" -ForegroundColor Green
+Write-Host "URL: https://prediction-market-project.uc.r.appspot.com" -ForegroundColor Cyan
