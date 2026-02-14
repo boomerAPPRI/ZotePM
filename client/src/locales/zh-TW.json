@@ -1,11 +1,23 @@
 {
     "nav": {
         "markets": "市場",
+        "challenges": "挑戰",
         "dashboard": "儀表板",
         "leaderboard": "排行榜",
         "profile": "個人資料",
         "login": "登入",
         "logout": "登出"
+    },
+    "challenges": {
+        "title": "進行中的挑戰",
+        "no_active": "目前沒有進行中的挑戰。",
+        "view_leaderboard": "查看排行榜",
+        "leaderboard_title": "挑戰排行榜",
+        "rank": "排名",
+        "user": "用戶",
+        "net_profit": "淨利潤",
+        "trades": "交易次數",
+        "rules": "排名基於此挑戰期間交易的淨利潤。"
     },
     "home": {
         "title": "熱門市場",
@@ -31,6 +43,8 @@
         "age_range": "年齡範圍",
         "occupation": "職業",
         "save": "儲存變更",
+        "save_success": "個人檔案更新成功！",
+        "terms_accepted": "您已於 {{date}} 同意<1>服務條款</1>與<3>隱私權政策</3>。",
         "success": "個人資料更新成功！",
         "fail": "更新個人資料失敗。",
         "placeholders": {
@@ -125,7 +139,9 @@
         "your_predictions": "您的預測",
         "no_predictions": "尚未進行任何預測。",
         "transaction_history": "交易紀錄",
-        "no_transactions": "尚無交易",
+        "no_transactions": "無交易紀錄",
+        "profile_challenge_reward": "個人資料更新挑戰獎勵",
+        "complete_profile_reward": "完善您的個人資料即可獲得 500 ₳！",
         "type": "類型",
         "market": "市場",
         "details": "詳情",
@@ -203,5 +219,106 @@
         "success": "感謝您的回饋！",
         "error": "提交回饋失敗",
         "capture_error": "擷取螢幕失敗"
+    },
+    "privacy": {
+        "title": "隱私權政策",
+        "description": "閱讀我們的隱私權政策與資料收集聲明",
+        "consent": "我已閱讀並同意<1>隱私權政策</1>與<3>服務條款</3>。我同意<strong>亞太和平研究基金會 (APPRI)</strong>和<strong>Boom Creator llc</strong>為平台功能和分析目的收集和處理我的個人資料。",
+        "last_updated": "最後更新：{{date}}",
+        "intro": {
+            "title": "1. 簡介與範圍",
+            "content": "本隱私權政策說明 <strong>亞太和平研究基金會 (APPRI)</strong>（被授權人）與 <strong>Boom Creator llc</strong>（平台擁有者）作為共同資料控制者（統稱「我們」），如何在 ZotePM 平台上收集、使用與保護您的個人資料。",
+            "compliance": "本政策旨在符合適用之資料保護法律，包括：",
+            "laws": [
+                "<strong>台灣：</strong> 個人資料保護法 (PDPA)",
+                "<strong>歐盟：</strong> 一般資料保護規則 (GDPR)",
+                "<strong>美國：</strong> 加州消費者隱私法 (CCPA/CPRA)",
+                "其他適用之國際隱私法律。"
+            ]
+        },
+        "collection": {
+            "title": "2. 我們收集的資訊",
+            "intro": "我們收集以下類型的資訊以提供服務：",
+            "items": [
+                "<strong>身分資料：</strong> 姓名、個人頭像（如透過 Line 登入提供）。",
+                "<strong>聯絡資料：</strong> 電子郵件地址。",
+                "<strong>個人檔案資料：</strong> 國家、城市、年齡範圍、職業。",
+                "<strong>遊戲資料：</strong> 預測、預報紀錄及與平台市場際動之紀錄（僅限遊戲幣/代幣）。",
+                "<strong>使用資料：</strong> 登入時間及平台分析互動紀錄。"
+            ]
+        },
+        "usage": {
+            "title": "3. 我們如何使用您的資料",
+            "intro": "我們將您的資料用於以下特定目的：",
+            "items": [
+                "<strong>服務提供：</strong> 建立帳戶、處理預測及維護排行榜。",
+                "<strong>分析與改進：</strong> 了解使用者人口統計並改進平台功能。",
+                "<strong>法律遵循：</strong> 遵守適用法律與規範。",
+                "<strong>溝通聯繫：</strong> 發送服務更新或重設密碼郵件。"
+            ],
+            "no_sell": "我們絕不出售您的個人資料給第三方。"
+        },
+        "sharing": {
+            "title": "4. 資料共享與共同控制權",
+            "content": "您的資料將在 <strong>亞太和平研究基金會</strong> 與 <strong>Boom Creator llc</strong> 之間共享，僅用於營運 ZotePM 平台。雙方實體均承諾以同等嚴謹程度保護您的資料。"
+        },
+        "rights": {
+            "title": "5. 使用者權利 (GDPR/PDPA/CCPA)",
+            "intro": "無論您身在何處，您擁有以下權利：",
+            "items": [
+                "<strong>存取權：</strong> 您可以聯繫我們索取您的個人資料副本：<a href=\"mailto:privacy@asiapacificpeace.org\" class=\"text-indigo-600 font-bold\">privacy@asiapacificpeace.org</a>。",
+                "<strong>更正權：</strong> 您可以隨時透過個人檔案頁面更新資訊。",
+                "<strong>刪除權（「被遺忘權」）：</strong> 您可以要求刪除您的帳戶及相關資料。請注意這將終止您對平台的使用權。",
+                "<strong>退出權：</strong> 本預測遊戲之功能運作需要基本的資料收集。若您希望退出所有資料收集，必須申請刪除帳戶。"
+            ]
+        },
+        "contact": {
+            "title": "6. 聯絡我們",
+            "content": "若要行使您的權利或有任何隱私相關問題，請聯繫我們的資料保護官："
+        }
+    },
+    "terms": {
+        "title": "服務條款與使用者協議",
+        "last_updated": "最後更新：{{date}}",
+        "notice": {
+            "title": "注意：",
+            "content": "本平台僅供娛樂、教育及研究用途。不涉及真錢賭博。"
+        },
+        "acceptance": {
+            "title": "1. 接受條款",
+            "content": "存取或使用由<strong>亞太和平研究基金會 (APPRI)</strong>和<strong>Boom Creator llc</strong>（以下簡稱「我們」）提供的 ZotePM 平台（以下簡稱「服務」），即表示您同意受這些條款的約束。如果您不同意條款的任何部分，則不得存取本服務。"
+        },
+        "virtual_currency": {
+            "title": "2. 虛擬貨幣與無金錢價值",
+            "items": [
+                "<strong>無真錢涉及：</strong> 平台使用的所有「代幣」、「點數」或「信用」均為虛擬，僅用於遊戲機制，<strong>不具備任何現實世界的金錢價值</strong>。",
+                "<strong>不可兌換：</strong> 虛擬貨幣不可兌換現金、法定貨幣，也不可用於購買本服務以外的商品或服務。",
+                "<strong>無所有權：</strong> 您不擁有虛擬貨幣。我們保留隨時修改、過期或撤銷虛擬貨幣的權利，且不承擔任何責任。"
+            ]
+        },
+        "liability": {
+            "title": "3. 責任限制",
+            "warning": "請仔細閱讀",
+            "content": "在適用法律允許的最大範圍內，<strong>APPRI</strong>、<strong>Boom Creator llc</strong>、其關聯公司、董事、員工、代理人或授權人，在任何情況下均不對因使用或無法使用本服務而產生的任何間接、懲罰性、偶然、特殊、後果性或懲戒性損害（包括但不限於利潤損失、商譽、使用、數據或其他無形損失的損害）承擔責任。"
+        },
+        "indemnification": {
+            "title": "4. 賠償",
+            "content": "您同意為 APPRI、Boom Creator llc 及其授權人和被授權人，及其員工、承包商、代理人、官員和董事辯護、賠償並使其免受損害，以免於因 a) 您使用和存取本服務，或 b) 違反本條款而產生的任何及所有索賠、損害、義務、損失、責任、成本或債務及費用（包括但不限於律師費）。"
+        },
+        "governing_law": {
+            "title": "5. 準據法與爭議解決",
+            "user_disputes": {
+                "title": "A. 使用者爭議",
+                "content": "本服務條款應受<strong>台灣（中華民國）</strong>法律管轄。您同意就任何僅涉及本服務使用或遊戲玩法的訴訟，服從位於台灣台北之法院的專屬管轄。"
+            },
+            "ip_disputes": {
+                "title": "B. 智慧財產權",
+                "content": "儘管有上述規定，任何關於 <strong>Boom Creator llc</strong> 擁有的平臺技術之所有權、智慧財產權或授權的爭議，應受<strong>美國德克薩斯州</strong>法律管轄，並專屬由位於德克薩斯州特拉維斯縣（Travis County）的州法院及聯邦法院管轄。"
+            }
+        },
+        "contact": {
+            "title": "6. 聯絡我們",
+            "content": "如果您對這些條款有任何疑問，請聯繫我們：<1>legal@asiapacificpeace.org</1>。"
+        }
     }
 }

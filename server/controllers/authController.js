@@ -123,7 +123,7 @@ const loginEmail = async (req, res) => {
 
 const getMe = async (req, res) => {
     try {
-        const result = await db.query('SELECT id, email, name, balance, role, country, city, age_range, occupation FROM users WHERE id = $1', [req.user.id]);
+        const result = await db.query('SELECT id, email, name, balance, role, country, city, age_range, occupation, profile_completed, terms_accepted_at FROM users WHERE id = $1', [req.user.id]);
         if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
         res.json(result.rows[0]);
     } catch (err) {
@@ -133,15 +133,59 @@ const getMe = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-    const { country, city, age_range, occupation } = req.body;
+    const { country, city, age_range, occupation, termsAccepted } = req.body;
     try {
+        await db.query('BEGIN');
+
+        // 1. Update profile fields
+        // Use COALESCE to allow partial updates if fields are undefined in req.body, 
+        // though standard is usually to send full object. 
+        // We'll stick to simple update but checking if valid.
+
+        let termsUpdateClause = "";
+        const params = [country, city, age_range, occupation, req.user.id];
+
+        if (termsAccepted) {
+            // If user accepted terms, update the timestamp if it's not already set
+            // Or update it to now (re-acceptance). For now, just update it.
+            await db.query('UPDATE users SET terms_accepted_at = NOW() WHERE id = $1 AND terms_accepted_at IS NULL', [req.user.id]);
+        }
+
         const result = await db.query(
-            'UPDATE users SET country = $1, city = $2, age_range = $3, occupation = $4 WHERE id = $5 RETURNING *',
-            [country, city, age_range, occupation, req.user.id]
+            `UPDATE users SET 
+                country = $1, 
+                city = $2, 
+                age_range = $3, 
+                occupation = $4 
+             WHERE id = $5 RETURNING *`,
+            params
         );
-        if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
-        res.json(result.rows[0]);
+
+        if (result.rows.length === 0) {
+            await db.query('ROLLBACK');
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user = result.rows[0];
+        let rewardMessage = '';
+
+        // 2. Check for Profile Completion Reward
+        // Criteria: Country, Age Range, and Occupation must be present.
+        if (!user.profile_completed && user.country && user.age_range && user.occupation) {
+            // Give Reward
+            await db.query('UPDATE users SET balance = balance + 500, profile_completed = true WHERE id = $1', [req.user.id]);
+            await db.query("INSERT INTO transactions (user_id, type, amount, description) VALUES ($1, 'profile_challenge_reward', 500, 'User Profile Update Challenge Reward')", [req.user.id]);
+
+            rewardMessage = 'Profile completed! You earned ₳500 reward.';
+            user.balance = parseFloat(user.balance) + 500;
+            user.profile_completed = true;
+        }
+
+        await db.query('COMMIT');
+        res.json({ ...user, message: rewardMessage });
+
     } catch (err) {
+        await db.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Failed to update profile' });
     }
@@ -391,6 +435,84 @@ const getPortfolio = async (req, res) => {
     }
 };
 
+const getUsers = async (req, res) => {
+    try {
+        const result = await db.query('SELECT id, name, email, role, balance, created_at, profile_completed FROM users ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+};
+
+const exportUserData = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // 1. Fetch User Profile
+        const userResult = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+        const user = userResult.rows[0];
+        delete user.password_hash; // Remove sensitive data
+        delete user.reset_token;
+
+        // 2. Fetch Transactions
+        const transactionsResult = await db.query('SELECT * FROM transactions WHERE user_id = $1 ORDER BY created_at DESC', [id]);
+        const transactions = transactionsResult.rows;
+
+        // 3. Fetch Orders (Bets)
+        const ordersResult = await db.query(`
+            SELECT o.*, m.title as market_title 
+            FROM orders o 
+            JOIN markets m ON o.market_id = m.id 
+            WHERE o.user_id = $1 
+            ORDER BY o.timestamp DESC
+        `, [id]);
+        const orders = ordersResult.rows;
+
+        // 4. Fetch Positions
+        const positionsResult = await db.query(`
+            SELECT p.*, m.title as market_title 
+            FROM positions p 
+            JOIN markets m ON p.market_id = m.id 
+            WHERE p.user_id = $1
+        `, [id]);
+        const positions = positionsResult.rows;
+
+        const fullData = {
+            user,
+            transactions,
+            orders,
+            positions,
+            exported_at: new Date().toISOString()
+        };
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename=user_${id}_data.json`);
+        res.json(fullData);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to export user data' });
+    }
+};
+
+const resetProfileReward = async (req, res) => {
+    try {
+        await db.query('BEGIN');
+        // Reset flag and deduct balance
+        await db.query('UPDATE users SET profile_completed = false, balance = balance - 500 WHERE id = $1', [req.user.id]);
+        // Remove transaction
+        await db.query("DELETE FROM transactions WHERE user_id = $1 AND (type = 'reward' OR type = 'profile_challenge_reward') AND amount = 500", [req.user.id]);
+
+        await db.query('COMMIT');
+        res.json({ message: 'Profile reward reset successfully' });
+    } catch (err) {
+        await db.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Failed to reset profile reward' });
+    }
+};
+
 module.exports = {
     login,
     callback,
@@ -403,4 +525,7 @@ module.exports = {
     changePassword,
     getTransactions,
     getPortfolio,
+    getUsers,
+    exportUserData,
+    resetProfileReward
 };

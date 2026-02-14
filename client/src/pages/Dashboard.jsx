@@ -166,14 +166,16 @@ const Dashboard = () => {
                                         {transactions.map((tx) => (
                                             <tr key={tx.id}>
                                                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">
-                                                    {tx.type === 'bet' ? t('dashboard.prediction') : tx.type}
+                                                    {tx.type === 'bet' ? t('dashboard.prediction') :
+                                                        tx.type === 'profile_challenge_reward' ? t('dashboard.profile_challenge_reward') :
+                                                            tx.type}
                                                 </td>
                                                 <td className="px-3 py-4 whitespace-normal text-sm text-gray-500 break-words">
                                                     {tx.category === 'order' ? (
                                                         <Link to={`/markets/${tx.market_id}`} className="text-indigo-600 hover:text-indigo-900">
                                                             {tx.marketTitle}
                                                         </Link>
-                                                    ) : '-'}
+                                                    ) : tx.description ? tx.description : '-'}
                                                 </td>
                                                 <td className="px-3 py-4 whitespace-normal text-sm text-gray-500">
                                                     {tx.category === 'order' ? (
@@ -185,9 +187,9 @@ const Dashboard = () => {
                                                         </div>
                                                     ) : '-'}
                                                 </td>
-                                                <td className={`px-3 py-4 whitespace-nowrap text-sm font-bold ${tx.type === 'win' || tx.type === 'deposit' ? 'text-green-600' : 'text-red-600'
+                                                <td className={`px-3 py-4 whitespace-nowrap text-sm font-bold ${['win', 'deposit', 'reward', 'profile_challenge_reward'].includes(tx.type) ? 'text-green-600' : 'text-red-600'
                                                     }`}>
-                                                    {tx.type === 'win' || tx.type === 'deposit' ? '+' : '-'}{parseFloat(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₳
+                                                    {['win', 'deposit', 'reward', 'profile_challenge_reward'].includes(tx.type) ? '+' : '-'}{parseFloat(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₳
                                                 </td>
                                                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-xs">
                                                     {new Date(tx.timestamp).toLocaleDateString()}

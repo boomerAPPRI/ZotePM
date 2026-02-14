@@ -10,8 +10,7 @@ const Admin = () => {
     const [editingMarket, setEditingMarket] = useState(null);
     const [markets, setMarkets] = useState([]);
 
-
-    // Form State
+    // Market Form State
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [resolutionCriteria, setResolutionCriteria] = useState('');
@@ -19,232 +18,99 @@ const Admin = () => {
     const [selectedType, setSelectedType] = useState('binary');
     const [outcomes, setOutcomes] = useState([{ id: 1, name: '' }, { id: 2, name: '' }]);
 
+    // Challenge State
+    const [challenges, setChallenges] = useState([]);
+    const [selectedChallengeMarkets, setSelectedChallengeMarkets] = useState([]);
+    const [challengeTitle, setChallengeTitle] = useState('');
+    const [challengeDesc, setChallengeDesc] = useState('');
+    const [challengeStart, setChallengeStart] = useState('');
+    const [challengeEnd, setChallengeEnd] = useState('');
+    const [editingChallenge, setEditingChallenge] = useState(null);
+
+    // Feedback State
+    const [feedbackEnabled, setFeedbackEnabled] = useState(false);
+    const [feedbackList, setFeedbackList] = useState([]);
+
+    const [reviews, setReviews] = useState([]); // This variable wasn't in original file, but I need `users` state.
+    const [users, setUsers] = useState([]);
+
     useEffect(() => {
         checkAdmin();
         fetchMarkets();
-    }, []);
+        if (activeTab === 'challenges') fetchChallenges();
+        if (activeTab === 'settings') fetchSettings();
+        if (activeTab === 'feedback') fetchFeedback();
+        if (activeTab === 'users') fetchUsers();
+    }, [activeTab]);
 
     const checkAdmin = async () => {
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login';
-                return;
-            }
             const response = await axios.get('/auth/me', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.role !== 'admin') {
-                alert('Access Denied: Admin only');
                 window.location.href = '/';
             }
         } catch (error) {
-            console.error('Error checking admin status:', error);
             window.location.href = '/login';
         }
     };
 
-    const fetchMarkets = async () => {
-        try {
-            const response = await axios.get('/api/markets?all=true');
-            setMarkets(response.data);
-        } catch (error) {
-            console.error('Error fetching markets:', error);
-        }
-    };
-
-    const handleTypeSelect = (type) => {
-        setSelectedType(type);
-        setStep(2);
-        if (type === 'binary') {
-            setOutcomes([{ id: 1, name: 'Yes' }, { id: 2, name: 'No' }]);
-        } else {
-            setOutcomes([{ id: 1, name: '' }, { id: 2, name: '' }]);
-        }
-    };
-
-    const handleCreateMarket = async (e) => {
-        e.preventDefault();
+    const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('/api/markets', {
-                title,
-                description,
-                resolution_criteria: resolutionCriteria,
-                outcomes: outcomes.filter(o => o.name.trim() !== ''),
-                resolution_date: resolutionDate,
-                type: selectedType
-            }, {
+            const response = await axios.get('/auth/users', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('Market created!');
-            fetchMarkets();
-            setStep(1);
-            resetForm();
+            setUsers(response.data);
         } catch (error) {
-            console.error('Error creating market:', error);
-            alert('Failed to create market: ' + (error.response?.data?.error || error.message));
+            console.error('Error fetching users:', error);
+            alert('Failed to fetch users');
         }
     };
 
-    const handleUpdateMarket = async (e) => {
-        e.preventDefault();
+    const handleExportUser = async (userId) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`/api/markets/${editingMarket.id}`, {
-                title,
-                description,
-                resolution_criteria: resolutionCriteria,
-                resolution_date: resolutionDate
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert('Market updated!');
-            fetchMarkets();
-            setEditingMarket(null);
-            resetForm();
-            setActiveTab('manage');
-        } catch (error) {
-            console.error('Error updating market:', error);
-            alert('Failed to update market');
-        }
-    };
-
-    const handleArchiveMarket = async (id) => {
-        if (!window.confirm('Are you sure you want to archive this market?')) return;
-        try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`/api/markets/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert('Market archived!');
-            fetchMarkets();
-        } catch (error) {
-            console.error('Error archiving market:', error);
-            alert('Failed to archive market');
-        }
-    };
-
-    const handleUnarchiveMarket = async (id) => {
-        if (!window.confirm('Are you sure you want to unarchive this market?')) return;
-        try {
-            const token = localStorage.getItem('token');
-            await axios.put(`/api/markets/${id}/unarchive`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert('Market unarchived!');
-            fetchMarkets();
-        } catch (error) {
-            console.error('Error unarchiving market:', error);
-            alert('Failed to unarchive market');
-        }
-    };
-
-    const startEditing = (market) => {
-        try {
-            console.log('Starting edit for market:', market);
-            setEditingMarket(market);
-            setTitle(market.title || '');
-            setDescription(market.description || '');
-            setResolutionCriteria(market.resolution_criteria || '');
-
-            let dateStr = '';
-            if (market.resolution_date) {
-                if (typeof market.resolution_date === 'string') {
-                    dateStr = market.resolution_date.split('T')[0];
-                } else if (market.resolution_date instanceof Date) {
-                    dateStr = market.resolution_date.toISOString().split('T')[0];
-                }
-            }
-            setResolutionDate(dateStr);
-
-            setActiveTab('create');
-            setStep(2);
-            setSelectedType(market.type || 'binary');
-
-            if (Array.isArray(market.outcomes)) {
-                setOutcomes(market.outcomes.map((o, i) => ({ id: i + 1, name: o.name })));
-            } else {
-                console.warn('Market outcomes is not an array:', market.outcomes);
-                setOutcomes([{ id: 1, name: '' }, { id: 2, name: '' }]);
-            }
-        } catch (error) {
-            console.error('Error starting edit:', error);
-            alert('Failed to start editing: ' + error.message);
-        }
-    };
-
-    const resetForm = () => {
-        setTitle('');
-        setDescription('');
-        setResolutionCriteria('');
-        setOutcomes([{ id: 1, name: '' }, { id: 2, name: '' }]);
-        setResolutionDate('');
-        setEditingMarket(null);
-    };
-
-    const handleAddOutcome = () => {
-        setOutcomes([...outcomes, { id: outcomes.length + 1, name: '' }]);
-    };
-
-    const handleOutcomeChange = (index, value) => {
-        const newOutcomes = [...outcomes];
-        newOutcomes[index].name = value;
-        setOutcomes(newOutcomes);
-    };
-
-    const handleRemoveOutcome = (index) => {
-        if (outcomes.length > 2) {
-            const newOutcomes = outcomes.filter((_, i) => i !== index).map((o, i) => ({ ...o, id: i + 1 }));
-            setOutcomes(newOutcomes);
-        }
-    };
-
-    const handleResolve = async (marketId, outcomeId) => {
-        try {
-            const token = localStorage.getItem('token');
-            await axios.post(`/api/markets/${marketId}/resolve`, { outcomeId }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert('Market resolved!');
-            fetchMarkets();
-        } catch (error) {
-            console.error('Error resolving market:', error);
-            alert('Failed to resolve market');
-        }
-    };
-
-    const downloadReport = async (reportType) => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`/api/markets/admin/reports/${reportType}`, {
+            const response = await axios.get(`/auth/users/${userId}/export`, {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'blob'
             });
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `${reportType === 'market-results' ? 'market_results_report.csv' : 'full_data_dump.xlsx'}`);
+            link.setAttribute('download', `user_${userId}_data.json`);
             document.body.appendChild(link);
             link.click();
             link.remove();
         } catch (error) {
-            console.error('Error downloading report:', error);
-            alert('Failed to download report');
+            console.error('Error exporting user data:', error);
+            alert('Failed to export user data');
         }
     };
 
-    const [feedbackEnabled, setFeedbackEnabled] = useState(false);
-    const [feedbackList, setFeedbackList] = useState([]);
+    const fetchMarkets = async () => {
+        try {
+            const response = await axios.get('/api/markets?all=true'); // Assuming backend supports all=true to see archived/closed
+            setMarkets(response.data);
+        } catch (error) {
+            console.error('Error fetching markets:', error);
+        }
+    };
 
-    useEffect(() => {
-        fetchMarkets();
-        if (activeTab === 'settings') fetchSettings();
-        if (activeTab === 'feedback') fetchFeedback();
-    }, [activeTab]);
+    const fetchChallenges = async () => {
+        try {
+            const response = await axios.get('/api/challenges');
+            setChallenges(response.data);
+        } catch (error) {
+            console.error('Error fetching challenges:', error);
+        }
+    };
 
     const fetchSettings = async () => {
         try {
+            // Use public status endpoint for reading
             const response = await axios.get('/api/feedback/status');
             setFeedbackEnabled(response.data.enabled);
         } catch (error) {
@@ -264,48 +130,278 @@ const Admin = () => {
         }
     };
 
+    const resetForm = () => {
+        setTitle('');
+        setDescription('');
+        setResolutionCriteria('');
+        setResolutionDate('');
+        setOutcomes([{ id: 1, name: '' }, { id: 2, name: '' }]);
+        setEditingMarket(null);
+        setSelectedType('binary');
+    };
+
+    const handleTypeSelect = (type) => {
+        setSelectedType(type);
+        setStep(2);
+    };
+
+    const handleAddOutcome = () => {
+        setOutcomes([...outcomes, { id: outcomes.length + 1, name: '' }]);
+    };
+
+    const handleRemoveOutcome = (index) => {
+        setOutcomes(outcomes.filter((_, i) => i !== index));
+    };
+
+    const handleOutcomeChange = (index, value) => {
+        const newOutcomes = [...outcomes];
+        newOutcomes[index].name = value;
+        setOutcomes(newOutcomes);
+    };
+
+    const handleCreateMarket = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            const payload = {
+                title,
+                description,
+                resolution_criteria: resolutionCriteria,
+                resolution_date: resolutionDate,
+                type: selectedType,
+                outcomes: selectedType === 'binary'
+                    ? [{ id: 1, name: 'Yes' }, { id: 2, name: 'No' }]
+                    : outcomes
+            };
+
+            await axios.post('/api/markets', payload, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            alert('Market created successfully!');
+            resetForm();
+            setStep(1);
+            fetchMarkets();
+        } catch (error) {
+            console.error('Error creating market:', error);
+            alert('Failed to create market');
+        }
+    };
+
+    const startEditing = (market) => {
+        setEditingMarket(market);
+        setTitle(market.title);
+        setDescription(market.description || '');
+        setResolutionCriteria(market.resolution_criteria || '');
+        // Format date for date input (YYYY-MM-DD) or datetime-local
+        // Input type is "date" so YYYY-MM-DD
+        const date = new Date(market.resolution_date);
+        setResolutionDate(date.toISOString().split('T')[0]);
+        setSelectedType(market.type);
+        setOutcomes(market.outcomes || []);
+        setStep(2);
+        setActiveTab('create');
+    };
+
+    const handleUpdateMarket = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            const payload = {
+                title,
+                description,
+                resolution_criteria: resolutionCriteria,
+                resolution_date: resolutionDate,
+                outcomes: outcomes // Usually outcomes aren't editable if bets exist, but for now allow
+            };
+
+            await axios.put(`/api/markets/${editingMarket.id}`, payload, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            alert('Market updated successfully!');
+            resetForm();
+            setStep(1);
+            setActiveTab('manage');
+            fetchMarkets();
+        } catch (error) {
+            console.error('Error updating market:', error);
+            alert('Failed to update market');
+        }
+    };
+
+    const handleArchiveMarket = async (id) => {
+        if (!confirm('Are you sure you want to archive this market?')) return;
+        try {
+            const token = localStorage.getItem('token');
+            // Using delete endpoint which likely archives or deletes
+            await axios.delete(`/api/markets/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchMarkets();
+        } catch (error) {
+            console.error('Error archiving market:', error);
+            alert('Failed to archive market');
+        }
+    };
+
+    const handleUnarchiveMarket = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(`/api/markets/${id}/unarchive`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchMarkets();
+        } catch (error) {
+            console.error('Error unarchiving market:', error);
+            alert('Failed to unarchive market');
+        }
+    };
+
+    const handleResolve = async (marketId, outcomeId) => {
+        if (!confirm('Are you sure? This will payout all bets!')) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`/api/markets/${marketId}/resolve`,
+                { winner_outcome_id: outcomeId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert('Market resolved successfully!');
+            fetchMarkets();
+        } catch (error) {
+            console.error('Error resolving market:', error);
+            alert('Failed to resolve market');
+        }
+    };
+
+    // Challenge Handlers
+    const resetChallengeForm = () => {
+        setChallengeTitle('');
+        setChallengeDesc('');
+        setChallengeStart('');
+        setChallengeEnd('');
+        setSelectedChallengeMarkets([]);
+        setEditingChallenge(null);
+    };
+
+    const startEditingChallenge = (challenge) => {
+        setEditingChallenge(challenge);
+        setChallengeTitle(challenge.title);
+        setChallengeDesc(challenge.description || '');
+        // Format for datetime-local: YYYY-MM-DDTHH:mm
+        const formatDate = (d) => new Date(d).toISOString().slice(0, 16);
+        setChallengeStart(formatDate(challenge.start_date));
+        setChallengeEnd(formatDate(challenge.end_date));
+        setSelectedChallengeMarkets(challenge.market_ids || []);
+    };
+
+    const toggleMarketSelection = (marketId) => {
+        setSelectedChallengeMarkets(prev => {
+            if (prev.includes(marketId)) return prev.filter(id => id !== marketId);
+            return [...prev, marketId];
+        });
+    };
+
+    const handleCreateChallenge = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            const payload = {
+                title: challengeTitle,
+                description: challengeDesc,
+                start_date: challengeStart,
+                end_date: challengeEnd,
+                market_ids: selectedChallengeMarkets.length > 0 ? selectedChallengeMarkets : null
+            };
+            await axios.post('/api/challenges', payload, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert('Challenge created!');
+            resetChallengeForm();
+            fetchChallenges();
+        } catch (error) {
+            console.error('Error creating challenge:', error);
+            alert('Failed to create challenge');
+        }
+    };
+
+    const handleUpdateChallenge = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            const payload = {
+                title: challengeTitle,
+                description: challengeDesc,
+                start_date: challengeStart,
+                end_date: challengeEnd,
+                market_ids: selectedChallengeMarkets.length > 0 ? selectedChallengeMarkets : null
+            };
+            await axios.put(`/api/challenges/${editingChallenge.id}`, payload, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert('Challenge updated!');
+            resetChallengeForm();
+            fetchChallenges();
+        } catch (error) {
+            console.error('Error updating challenge:', error);
+            alert('Failed to update challenge');
+        }
+    };
+
+    const handleArchiveChallenge = async (id) => {
+        if (!confirm('Archive this challenge?')) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(`/api/challenges/${id}/archive`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchChallenges();
+        } catch (error) {
+            console.error('Error archiving challenge:', error);
+        }
+    };
+
+    // Settings & Feedback
     const toggleFeedback = async () => {
         try {
             const token = localStorage.getItem('token');
             const newState = !feedbackEnabled;
-            await axios.post('/api/admin/feedback/toggle', { enabled: newState }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axios.post('/api/admin/feedback/toggle',
+                { enabled: newState },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setFeedbackEnabled(newState);
-            alert(`Feedback system ${newState ? 'enabled' : 'disabled'}`);
         } catch (error) {
             console.error('Error toggling feedback:', error);
-            alert('Failed to update settings');
+            alert('Failed to toggle feedback');
         }
     };
 
-    const openScreenshot = (dataUrl) => {
+    const openScreenshot = (url) => {
+        window.open(url, '_blank');
+    };
+
+    const downloadReport = async (type) => {
         try {
-            // Split metadata from data
-            const [metadata, base64Data] = dataUrl.split(',');
-            const contentType = metadata.match(/:(.*?);/)[1];
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`/api/admin/reports/${type}`, {
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${type}_${new Date().toISOString().split('T')[0]}.csv`); // Default csv, full-dump handles json internally? 
+            // Actually full-dump returns JSON usually, but blob handles it.
+            // Let's deduce extension
+            if (type === 'full-dump') link.setAttribute('download', `db_dump_${new Date().toISOString().split('T')[0]}.json`);
 
-            // Convert base64 to blob
-            const byteCharacters = atob(base64Data);
-            const byteArrays = [];
-            const sliceSize = 1024;
-
-            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-                const slice = byteCharacters.slice(offset, offset + sliceSize);
-                const byteNumbers = new Array(slice.length);
-                for (let i = 0; i < slice.length; i++) {
-                    byteNumbers[i] = slice.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                byteArrays.push(byteArray);
-            }
-
-            const blob = new Blob(byteArrays, { type: contentType });
-            const blobUrl = URL.createObjectURL(blob);
-            window.open(blobUrl, '_blank');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
         } catch (error) {
-            console.error("Error opening screenshot:", error);
-            alert("Failed to open screenshot.");
+            console.error('Error downloading report:', error);
+            alert('Failed to download report');
         }
     };
 
@@ -314,42 +410,15 @@ const Admin = () => {
             <h1 className="text-3xl font-bold mb-8 text-gray-900">Admin Dashboard</h1>
 
             <div className="flex gap-4 mb-8 border-b border-gray-200 pb-4 overflow-x-auto">
-                <button
-                    onClick={() => { setActiveTab('create'); resetForm(); setStep(1); }}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'create' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                    Create Market
-                </button>
-                <button
-                    onClick={() => setActiveTab('manage')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                    Manage Markets
-                </button>
-                <button
-                    onClick={() => setActiveTab('archived')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'archived' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                    Archived Markets
-                </button>
-                <button
-                    onClick={() => setActiveTab('reports')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'reports' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                    Reports
-                </button>
-                <button
-                    onClick={() => setActiveTab('feedback')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'feedback' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                    Feedback
-                </button>
-                <button
-                    onClick={() => setActiveTab('settings')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'settings' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                    Settings
-                </button>
+                {['create', 'manage', 'challenges', 'users', 'archived', 'reports', 'settings', 'feedback'].map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap capitalize ${activeTab === tab ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                    >
+                        {tab === 'create' ? 'Create Market' : tab}
+                    </button>
+                ))}
             </div>
 
             {/* ... Existing Tabs ... */}
@@ -373,28 +442,28 @@ const Admin = () => {
                                     onClick={() => handleTypeSelect('multiple_choice')}
                                 />
                                 <TypeCard
-                                    icon={<Hash className="w-8 h-8 text-indigo-500" />}
+                                    icon={<Hash className="w-8 h-8 text-gray-400" />}
                                     title="Numeric"
                                     description="How many people will come to Taco Tuesday?"
-                                    disabled
+                                    disabled={true}
                                 />
                                 <TypeCard
-                                    icon={<Calendar className="w-8 h-8 text-green-500" />}
+                                    icon={<Calendar className="w-8 h-8 text-gray-400" />}
                                     title="Date"
                                     description="When will OpenAI release GPT-7?"
-                                    disabled
+                                    disabled={true}
                                 />
                                 <TypeCard
-                                    icon={<BarChart3 className="w-8 h-8 text-orange-500" />}
+                                    icon={<BarChart3 className="w-8 h-8 text-gray-400" />}
                                     title="Poll"
                                     description="Which color should I wear to prom?"
-                                    disabled
+                                    disabled={true}
                                 />
                                 <TypeCard
-                                    icon={<MessageSquare className="w-8 h-8 text-teal-500" />}
+                                    icon={<MessageSquare className="w-8 h-8 text-gray-400" />}
                                     title="Discussion Post"
                                     description="Share groups of markets, updates, ideas, or stories."
-                                    disabled
+                                    disabled={true}
                                 />
                             </div>
                         </div>
@@ -402,6 +471,7 @@ const Admin = () => {
 
                     {step === 2 && (
                         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+                            {/* ... Form Content ... */}
                             {!editingMarket && (
                                 <button onClick={() => setStep(1)} className="mb-6 text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
                                     ← Back to types
@@ -519,27 +589,13 @@ const Admin = () => {
                                 </div>
                                 <div className="flex flex-col gap-2 items-end">
                                     <div className="flex gap-2">
-                                        <button
-                                            onClick={() => startEditing(market)}
-                                            className="bg-blue-50 text-blue-600 px-3 py-1 text-xs rounded-full hover:bg-blue-100 transition-colors"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleArchiveMarket(market.id)}
-                                            className="bg-red-50 text-red-600 px-3 py-1 text-xs rounded-full hover:bg-red-100 transition-colors"
-                                        >
-                                            Archive
-                                        </button>
+                                        <button onClick={() => startEditing(market)} className="bg-blue-50 text-blue-600 px-3 py-1 text-xs rounded-full hover:bg-blue-100 transition-colors">Edit</button>
+                                        <button onClick={() => handleArchiveMarket(market.id)} className="bg-red-50 text-red-600 px-3 py-1 text-xs rounded-full hover:bg-red-100 transition-colors">Archive</button>
                                     </div>
                                     {market.status === 'open' && (
                                         <div className="flex flex-wrap gap-2 justify-end max-w-md mt-2">
                                             {market.outcomes.map(outcome => (
-                                                <button
-                                                    key={outcome.id}
-                                                    onClick={() => handleResolve(market.id, outcome.id)}
-                                                    className="bg-gray-100 text-gray-700 px-3 py-1 text-xs rounded-full hover:bg-green-600 hover:text-white transition-colors"
-                                                >
+                                                <button key={outcome.id} onClick={() => handleResolve(market.id, outcome.id)} className="bg-gray-100 text-gray-700 px-3 py-1 text-xs rounded-full hover:bg-green-600 hover:text-white transition-colors">
                                                     Resolve: {outcome.name}
                                                 </button>
                                             ))}
@@ -549,6 +605,83 @@ const Admin = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {activeTab === 'challenges' && (
+                <div className="space-y-8">
+                    {/* Create/Edit Challenge Form */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <h2 className="text-lg font-semibold mb-4">{editingChallenge ? 'Edit Challenge' : 'Create New Challenge'}</h2>
+                        <form onSubmit={editingChallenge ? handleUpdateChallenge : handleCreateChallenge} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="text" placeholder="Challenge Title" value={challengeTitle} onChange={e => setChallengeTitle(e.target.value)} className="border p-2 rounded" required />
+                                <input type="text" placeholder="Description" value={challengeDesc} onChange={e => setChallengeDesc(e.target.value)} className="border p-2 rounded" />
+                                <input type="datetime-local" value={challengeStart} onChange={e => setChallengeStart(e.target.value)} className="border p-2 rounded" required />
+                                <input type="datetime-local" value={challengeEnd} onChange={e => setChallengeEnd(e.target.value)} className="border p-2 rounded" required />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Select Markets (Optional - Default All)</label>
+                                <div className="max-h-60 overflow-y-auto border rounded p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {markets.filter(m => m.status === 'open').map(market => (
+                                        <label key={market.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedChallengeMarkets.includes(market.id)}
+                                                onChange={() => toggleMarketSelection(market.id)}
+                                                className="rounded text-indigo-600"
+                                            />
+                                            <span className="text-sm truncate">{market.title}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                                    {editingChallenge ? 'Update Challenge' : 'Create Challenge'}
+                                </button>
+                                {editingChallenge && (
+                                    <button
+                                        type="button"
+                                        onClick={resetChallengeForm}
+                                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Challenge List */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-100">
+                        <h2 className="text-lg font-semibold p-6 pb-2">Existing Challenges</h2>
+                        {challenges.map(challenge => (
+                            <div key={challenge.id} className="p-6 flex justify-between items-center hover:bg-gray-50">
+                                <div>
+                                    <h3 className="font-bold flex items-center gap-2">
+                                        {challenge.title}
+                                        {!challenge.is_active && <span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded">Archived</span>}
+                                        {challenge.is_active && <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded">Active</span>}
+                                    </h3>
+                                    <p className="text-sm text-gray-500">{new Date(challenge.start_date).toLocaleDateString()} - {new Date(challenge.end_date).toLocaleDateString()}</p>
+                                    <p className="text-xs text-gray-400 mt-1">Markets: {challenge.market_ids ? challenge.market_ids.length : 'All'}</p>
+                                </div>
+                                {challenge.is_active && (
+                                    <div className="flex gap-2">
+                                        <button onClick={() => startEditingChallenge(challenge)} className="bg-blue-50 text-blue-600 px-3 py-1 text-sm rounded hover:bg-blue-100">
+                                            Edit
+                                        </button>
+                                        <button onClick={() => handleArchiveChallenge(challenge.id)} className="bg-red-50 text-red-600 px-3 py-1 text-sm rounded hover:bg-red-100">
+                                            Archive
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -623,8 +756,53 @@ const Admin = () => {
                 </div>
             )}
 
+            {activeTab === 'users' && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 border-b border-gray-100">
+                                <tr>
+                                    <th className="p-4 font-semibold text-gray-600">ID</th>
+                                    <th className="p-4 font-semibold text-gray-600">Name</th>
+                                    <th className="p-4 font-semibold text-gray-600">Email</th>
+                                    <th className="p-4 font-semibold text-gray-600">Role</th>
+                                    <th className="p-4 font-semibold text-gray-600">Balance</th>
+                                    <th className="p-4 font-semibold text-gray-600">Joined</th>
+                                    <th className="p-4 font-semibold text-gray-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {users.map(user => (
+                                    <tr key={user.id} className="hover:bg-gray-50">
+                                        <td className="p-4 text-gray-500">#{user.id}</td>
+                                        <td className="p-4 font-medium text-gray-900">{user.name}</td>
+                                        <td className="p-4 text-gray-500">{user.email}</td>
+                                        <td className="p-4">
+                                            <span className={`px-2 py-1 text-xs rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-gray-700">₳{parseFloat(user.balance).toLocaleString()}</td>
+                                        <td className="p-4 text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
+                                        <td className="p-4">
+                                            <button
+                                                onClick={() => handleExportUser(user.id)}
+                                                className="bg-indigo-50 text-indigo-600 px-3 py-1 text-sm rounded hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                                            >
+                                                <Download className="w-4 h-4" /> Export
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
             {activeTab === 'feedback' && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-100">
+                    {/* ... Feedback Content ... */}
                     {feedbackList.length === 0 ? (
                         <div className="p-6 text-center text-gray-500">No feedback reports found.</div>
                     ) : (

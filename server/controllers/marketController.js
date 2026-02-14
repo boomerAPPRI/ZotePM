@@ -91,6 +91,10 @@ const getMarket = async (req, res) => {
         }));
         market.volume = volume;
 
+        // Calculate unique participants
+        const participantsResult = await db.query('SELECT COUNT(DISTINCT user_id) as count FROM orders WHERE market_id = $1', [id]);
+        market.participant_count = parseInt(participantsResult.rows[0]?.count || 0);
+
         res.json(market);
     } catch (err) {
         console.error(err);

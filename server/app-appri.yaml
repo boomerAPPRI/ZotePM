@@ -1,15 +1,16 @@
 runtime: nodejs20
 entrypoint: npm start
-instance_class: F2
+instance_class: F1
+service: appri
 automatic_scaling:
   target_cpu_utilization: 0.65
   min_instances: 0
-  max_instances: 1
+  max_instances: 2
 
 env_variables:
   NODE_ENV: 'production'
-  DATABASE_URL: 'postgresql://postgres:SecureP@ssw0rd2025!@/appri?host=/cloudsql/prediction-market-project:us-central1:appri-db-2'
-  JWT_SECRET: 'your-production-secret-key-change-this'
+  DATABASE_URL: 'postgresql://postgres:SecureP@ssw0rd2025!@/appri_appri?host=/cloudsql/prediction-market-project:us-central1:appri-db-2'
+  JWT_SECRET: 'appri-secret-key-2025'
   USE_MOCK_DB: 'false'
   # SMTP Configuration (SendGrid)
   SMTP_HOST: 'smtp.sendgrid.net'
@@ -18,7 +19,7 @@ env_variables:
   SMTP_PASS: 'YOUR_SENDGRID_API_KEY'
   SMTP_SECURE: 'false'
   SMTP_FROM_EMAIL: 'noreply@boomcreator.com'
-  FRONTEND_URL: 'https://prediction-market-project.uc.r.appspot.com'
+  FRONTEND_URL: 'https://appri-dot-prediction-market-project.uc.r.appspot.com'
 
 beta_settings:
   cloud_sql_instances: 'prediction-market-project:us-central1:appri-db-2'

@@ -1,11 +1,23 @@
 {
     "nav": {
         "markets": "Markets",
+        "challenges": "Challenges",
         "dashboard": "Dashboard",
         "leaderboard": "Leaderboard",
         "profile": "Profile",
         "login": "Login",
         "logout": "Logout"
+    },
+    "challenges": {
+        "title": "Active Challenges",
+        "no_active": "No active challenges at the moment.",
+        "view_leaderboard": "View Leaderboard",
+        "leaderboard_title": "Challenge Leaderboard",
+        "rank": "Rank",
+        "user": "User",
+        "net_profit": "Net Profit",
+        "trades": "Trades",
+        "rules": "Rankings are based on Net Profit from trades made during this challenge period."
     },
     "home": {
         "title": "Trending Markets",
@@ -31,7 +43,8 @@
         "age_range": "Age Range",
         "occupation": "Occupation",
         "save": "Save Changes",
-        "success": "Profile updated successfully!",
+        "save_success": "Profile updated successfully!",
+        "terms_accepted": "You agreed to the <1>Terms of Service</1> & <3>Privacy Policy</3> on {{date}}.",
         "fail": "Failed to update profile.",
         "placeholders": {
             "select_country": "Select Country",
@@ -100,7 +113,9 @@
         "your_predictions": "Your Predictions",
         "no_predictions": "No predictions placed yet.",
         "transaction_history": "Transaction History",
-        "no_transactions": "No transactions yet",
+        "no_transactions": "No transactions found",
+        "profile_challenge_reward": "Profile Challenge Reward",
+        "complete_profile_reward": "Complete your profile to earn 500 ₳!",
         "type": "Type",
         "market": "Market",
         "details": "Details",
@@ -178,5 +193,106 @@
         "success": "Thank you for your feedback!",
         "error": "Failed to submit feedback",
         "capture_error": "Failed to capture screenshot"
+    },
+    "privacy": {
+        "title": "Privacy Policy",
+        "description": "Read our Privacy Policy & Data Collection Notice",
+        "consent": "I have read and agree to the <1>Privacy Policy</1> and <3>Terms of Service</3>. I consent to the collection and processing of my personal data by <strong>Asia Pacific Peace Research Institute</strong> and <strong>Boom Creator llc</strong> for platform functionality and analytics.",
+        "last_updated": "Last Updated: {{date}}",
+        "intro": {
+            "title": "1. Introduction & Scope",
+            "content": "This Privacy Policy describes how <strong>Asia Pacific Peace Research Institute (APPRI)</strong> (Licensee) and <strong>Boom Creator llc</strong> (Platform Owner), acting as Joint Data Controllers (collectively, \"we\", \"us\", or \"our\"), collect, use, and protect your personal information on the ZotePM platform.",
+            "compliance": "This policy is designed to comply with applicable data protection laws, including:",
+            "laws": [
+                "<strong>Taiwan:</strong> Personal Data Protection Act (PDPA)",
+                "<strong>European Union:</strong> General Data Protection Regulation (GDPR)",
+                "<strong>United States:</strong> California Consumer Privacy Act (CCPA/CPRA)",
+                "Other applicable international privacy laws."
+            ]
+        },
+        "collection": {
+            "title": "2. Information We Collect",
+            "intro": "We collect the following types of information to provide our services:",
+            "items": [
+                "<strong>Identity Data:</strong> Name, Profile Picture (if provided via Line Login).",
+                "<strong>Contact Data:</strong> Email address.",
+                "<strong>Profile Data:</strong> Country, City, Age Range, Occupation.",
+                "<strong>Gameplay Data:</strong> Records of predictions, forecasts, and interaction with platform markets (Play Money/Tokens only).",
+                "<strong>Usage Data:</strong> Login times and interactions with the platform analytics."
+            ]
+        },
+        "usage": {
+            "title": "3. How We Use Your Data",
+            "intro": "We use your data for the following specific purposes:",
+            "items": [
+                "<strong>Service Delivery:</strong> To create your account, process predictions, and maintain the leaderboard.",
+                "<strong>Analytics & Improvement:</strong> To understand user demographics and improve platform features.",
+                "<strong>Legal Compliance:</strong> To comply with applicable laws and regulations.",
+                "<strong>Communication:</strong> To send service updates or password reset emails."
+            ],
+            "no_sell": "We do NOT sell your personal data to third parties."
+        },
+        "sharing": {
+            "title": "4. Data Sharing & Joint Comptrollership",
+            "content": "Your data is shared between <strong>Asia Pacific Peace Research Institute</strong> and <strong>Boom Creator llc</strong> for the sole purpose of operating the ZotePM platform. Both entities are committed to protecting your data with equal rigor."
+        },
+        "rights": {
+            "title": "5. User Rights (GDPR/PDPA/CCPA)",
+            "intro": "Regardless of your location, you have the following rights:",
+            "items": [
+                "<strong>Right to Access:</strong> You can request a copy of your personal data by contacting us at <a href=\"mailto:privacy@asiapacificpeace.org\" class=\"text-indigo-600 font-bold\">privacy@asiapacificpeace.org</a>.",
+                "<strong>Right to Rectification:</strong> You can update your profile information at any time via your Profile page.",
+                "<strong>Right to Erasure (\"Right to be Forgotten\"):</strong> You can request the deletion of your account and associated data. Note that this will terminate your access to the platform.",
+                "<strong>Right to Opt-Out:</strong> Essential data collection is required for the functionality of this prediction game. If you wish to opt-out of all data collection, you must request account deletion."
+            ]
+        },
+        "contact": {
+            "title": "6. Contact Us",
+            "content": "To exercise your rights or for any privacy-related inquiries, please contact our Data Protection Officer at:"
+        }
+    },
+    "terms": {
+        "title": "Terms of Service & User Agreement",
+        "last_updated": "Last Updated: {{date}}",
+        "notice": {
+            "title": "NOTICE:",
+            "content": "This platform is for entertainment, educational, and research purposes only. No real money gambling is involved."
+        },
+        "acceptance": {
+            "title": "1. Acceptance of Terms",
+            "content": "By accessing or using the ZotePM platform (\"Service\"), provided by <strong>Asia Pacific Peace Research Institute (APPRI)</strong> and <strong>Boom Creator llc</strong> (\"we\", \"us\", \"our\"), you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the Service."
+        },
+        "virtual_currency": {
+            "title": "2. Virtual Currency & No Monetary Value",
+            "items": [
+                "<strong>No Real Money:</strong> All \"tokens\", \"points\", or \"credits\" used on the platform are purely virtual, strictly for gameplay mechanics, and have <strong>NO real-world monetary value</strong>.",
+                "<strong>Non-Redeemable:</strong> Virtual currency cannot be exchanged for cash, legal tender, or currency of any state, region, or political entity, nor can it be used to purchase goods or services outside of the Service.",
+                "<strong>No Ownership:</strong> You do not own the virtual currency. We reserve the right to modify, expire, or revoke virtual currency at any time without liability."
+            ]
+        },
+        "liability": {
+            "title": "3. Limitation of Liability",
+            "warning": "PLEASE READ CAREFULLY",
+            "content": "To the maximum extent permitted by applicable law, in no event shall <strong>APPRI</strong>, <strong>Boom Creator llc</strong>, their affiliates, directors, employees, agents, or licensors be liable for any indirect, punitive, incidental, special, consequential, or exemplary damages, including without limitation damages for loss of profits, goodwill, use, data, or other intangible losses, arising out of or relating to the use of, or inability to use, this service."
+        },
+        "indemnification": {
+            "title": "4. Indemnification",
+            "content": "You agree to defend, indemnify, and hold harmless APPRI, Boom Creator llc, and their licensee and licensors, and their employees, contractors, agents, officers, and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of a) your use and access of the Service, or b) a breach of these Terms."
+        },
+        "governing_law": {
+            "title": "5. Governing Law & Dispute Resolution",
+            "user_disputes": {
+                "title": "A. User Disputes",
+                "content": "These Terms shall be governed by the laws of <strong>Taiwan (Republic of China)</strong>. You agree to submit to the personal jurisdiction of the courts located in Taipei, Taiwan for any actions solely involving the usage of the Service or Gameplay."
+            },
+            "ip_disputes": {
+                "title": "B. Intellectual Property",
+                "content": "Notwithstanding the above, any disputes regarding the ownership, intellectual property rights, or licensing of the Platform technology owned by <strong>Boom Creator llc</strong> shall be governed by the laws of the <strong>State of Texas, USA</strong>, and shall be subject to the exclusive jurisdiction of the state and federal courts located in Travis County, Texas."
+            }
+        },
+        "contact": {
+            "title": "6. Contact",
+            "content": "If you have any questions about these Terms, please contact us at <1>legal@asiapacificpeace.org</1>."
+        }
     }
 }

@@ -21,6 +21,7 @@ app.use((req, res, next) => {
 const authRoutes = require('./routes/authRoutes');
 const marketRoutes = require('./routes/marketRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
+const challengeRoutes = require('./routes/challengeRoutes');
 const { getMarketResultsReport, getFullDataDump } = require('./controllers/reportController');
 const { submitFeedback, getFeedback, getFeedbackStatus, toggleFeedbackStatus } = require('./controllers/feedbackController');
 const { authenticateToken, requireAdmin } = require('./middleware/authMiddleware');
@@ -28,6 +29,7 @@ const { authenticateToken, requireAdmin } = require('./middleware/authMiddleware
 app.use('/auth', authRoutes);
 app.use('/api/markets', marketRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/challenges', challengeRoutes);
 
 // Report Routes
 app.get('/api/admin/reports/market-results', authenticateToken, requireAdmin, getMarketResultsReport);

@@ -22,6 +22,12 @@ const Navbar = () => {
 
     return (
         <header className="bg-white shadow-sm sticky top-0 z-50">
+            {import.meta.env.MODE === 'appri' && (
+                <div className="h-1.5 w-full flex">
+                    <div className="h-full w-1/4 bg-[#000095]"></div>
+                    <div className="h-full w-3/4 bg-[#FE0000]"></div>
+                </div>
+            )}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
                     <div className="flex-shrink-0 flex items-center gap-2">
@@ -49,6 +55,18 @@ const Navbar = () => {
                                         <path d="M12 8v8M8 12h8" stroke="white" strokeWidth="2" fill="none" />
                                     </svg>
                                 </div>
+                            ) : import.meta.env.MODE === 'appri' ? (
+                                <span
+                                    className="text-4xl font-black tracking-tighter bg-clip-text text-transparent bg-cover bg-center"
+                                    style={{
+                                        backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/7/72/Flag_of_the_Republic_of_China.svg')",
+                                        backgroundPosition: 'center',
+                                        // Adjust scale to ensure the sun is visible if possible, 
+                                        // but 'cover' usually works best for generic coloring.
+                                    }}
+                                >
+                                    APPRI
+                                </span>
                             ) : (
                                 "ZotePM"
                             )}
@@ -57,8 +75,19 @@ const Navbar = () => {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex space-x-1 items-center">
-                        <Link to="/" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">{t('nav.markets') || 'Markets'}</Link>
-                        <Link to="/leaderboard" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">{t('nav.leaderboard') || 'Leaderboard'}</Link>
+                        <Link to="/" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                            {import.meta.env.MODE === 'piano' ? 'Challenges' : (t('nav.markets') || 'Markets')}
+                        </Link>
+                        {user && (
+                            <Link to="/challenges" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                                {t('nav.challenges') || 'Challenges'}
+                            </Link>
+                        )}
+                        {user && (
+                            <Link to="/leaderboard" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                                {import.meta.env.MODE === 'piano' ? 'Top Scores' : (t('nav.leaderboard') || 'Leaderboard')}
+                            </Link>
+                        )}
 
                         {user && user.role === 'admin' && (
                             <Link to="/admin" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">Admin</Link>
@@ -68,7 +97,9 @@ const Navbar = () => {
 
                         {user ? (
                             <>
-                                <Link to="/dashboard" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">{t('nav.dashboard') || 'Dashboard'}</Link>
+                                <Link to="/dashboard" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                                    {import.meta.env.MODE === 'piano' ? 'My Stats' : (t('nav.dashboard') || 'Dashboard')}
+                                </Link>
                                 <Link to="/profile" className="text-gray-600 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-sm font-medium transition-colors" title="Profile">
                                     <User className="w-5 h-5" />
                                 </Link>
@@ -101,36 +132,50 @@ const Navbar = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Mobile Menu */}
-            {isMenuOpen && (
-                <div className="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
-                    <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                        <Link to="/" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.markets') || 'Markets'}</Link>
-                        <Link to="/leaderboard" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.leaderboard') || 'Leaderboard'}</Link>
+            {
+                isMenuOpen && (
+                    <div className="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
+                        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.markets') || 'Markets'}</Link>
+                            {user && (
+                                <Link to="/challenges" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.challenges') || 'Challenges'}</Link>
+                            )}
+                            {user && (
+                                <Link to="/leaderboard" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.leaderboard') || 'Leaderboard'}</Link>
+                            )}
 
-                        {user && user.role === 'admin' && (
-                            <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Admin</Link>
-                        )}
+                            {user && user.role === 'admin' && (
+                                <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Admin</Link>
+                            )}
 
-                        {user ? (
-                            <>
-                                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.dashboard') || 'Dashboard'}</Link>
-                                <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.profile') || 'Profile'}</Link>
-                                <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="block w-full text-left text-red-600 hover:bg-red-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.logout') || 'Logout'}</button>
-                            </>
-                        ) : (
-                            <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block text-indigo-600 font-medium px-3 py-2 rounded-md text-base">{t('nav.login') || 'Login'}</Link>
-                        )}
+                            {user ? (
+                                <>
+                                    <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.dashboard') || 'Dashboard'}</Link>
+                                    <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.profile') || 'Profile'}</Link>
+                                    <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="block w-full text-left text-red-600 hover:bg-red-50 px-3 py-2 rounded-md text-base font-medium">{t('nav.logout') || 'Logout'}</button>
+                                </>
+                            ) : (
+                                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block text-indigo-600 font-medium px-3 py-2 rounded-md text-base">{t('nav.login') || 'Login'}</Link>
+                            )}
 
-                        <button onClick={() => { toggleLanguage(); setIsMenuOpen(false); }} className="block w-full text-left text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-base font-medium">
-                            {i18n.language === 'en' ? 'Switch to 繁中' : 'Switch to English'}
-                        </button>
+                            <button onClick={() => { toggleLanguage(); setIsMenuOpen(false); }} className="block w-full text-left text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-base font-medium">
+                                {i18n.language === 'en' ? 'Switch to 繁中' : 'Switch to English'}
+                            </button>
+                        </div>
                     </div>
+                )
+            }
+            {user && !user.profile_completed && (
+                <div className="bg-indigo-600 text-white text-center py-2 text-sm font-medium">
+                    <Link to="/profile" className="hover:underline">
+                        {t('dashboard.complete_profile_reward') || 'Complete your profile to earn 500 ₳!'}
+                    </Link>
                 </div>
             )}
-        </header>
+        </header >
     );
 };
 

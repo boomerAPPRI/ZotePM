@@ -16,4 +16,12 @@ router.post('/change-password', authenticateToken, authController.changePassword
 router.get('/transactions', authenticateToken, authController.getTransactions);
 router.get('/portfolio', authenticateToken, authController.getPortfolio);
 
+// Admin Routes
+const { requireAdmin } = require('../middleware/authMiddleware');
+router.get('/users', authenticateToken, requireAdmin, authController.getUsers);
+router.get('/users/:id/export', authenticateToken, requireAdmin, authController.exportUserData);
+
+// Debug/Testing: Reset Profile Reward
+router.post('/reset-reward', authenticateToken, authController.resetProfileReward);
+
 module.exports = router;

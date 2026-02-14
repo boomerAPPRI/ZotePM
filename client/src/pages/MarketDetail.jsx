@@ -10,6 +10,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import { getOutcomeColor, getOutcomeStroke } from '../utils/colors';
 import lmsr from '../utils/lmsr';
 import CommentSection from '../components/CommentSection';
+import SimpleMarketView from '../components/SimpleMarketView';
 
 const MarketDetail = () => {
     const { t } = useTranslation();
@@ -150,6 +151,23 @@ const MarketDetail = () => {
 
     if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
     if (!market) return <div className="text-center mt-10">Market not found</div>;
+
+    // Piano Mode: Simple Gamer UI
+    if (import.meta.env.MODE === 'piano') {
+        return (
+            <SimpleMarketView
+                market={market}
+                userBalance={userBalance}
+                onPredict={handlePlacePrediction}
+                handleAmountChange={handleAmountChange}
+                amount={amount}
+                setAmount={setAmount}
+                setSelectedOutcome={setSelectedOutcome}
+                selectedOutcome={selectedOutcome}
+                predictionCost={predictionCost}
+            />
+        );
+    }
 
     const isResolved = market.status === 'resolved';
 

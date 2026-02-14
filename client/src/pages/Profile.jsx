@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, MapPin, Briefcase, Calendar } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { User, MapPin, Briefcase, Calendar, Trophy } from 'lucide-react';
+import { useTranslation, Trans } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 
 
 
 const Profile = () => {
     const { t } = useTranslation();
+    const { refreshUser } = useAuth(); // Get refreshUser from context
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState('');
     const [formData, setFormData] = useState({
         country: '',
         city: '',
         age_range: '',
-        occupation: ''
+        occupation: '',
+        termsAccepted: false
     });
-    const [message, setMessage] = useState('');
 
     useEffect(() => {
         fetchProfile();
@@ -32,7 +35,8 @@ const Profile = () => {
                 country: response.data.country || '',
                 city: response.data.city || '',
                 age_range: response.data.age_range || '',
-                occupation: response.data.occupation || ''
+                occupation: response.data.occupation || '',
+                termsAccepted: !!response.data.terms_accepted_at
             });
             setLoading(false);
         } catch (error) {
@@ -42,15 +46,8 @@ const Profile = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => {
-            const newData = { ...prev, [name]: value };
-            // Reset city if country changes
-            if (name === 'country') {
-                newData.city = '';
-            }
-            return newData;
-        });
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setFormData({ ...formData, [e.target.name]: value });
     };
 
     const handleSubmit = async (e) => {
@@ -61,8 +58,9 @@ const Profile = () => {
             await axios.put('/auth/profile', formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setMessage(t('profile.success'));
-            fetchProfile(); // Refresh data
+            setMessage(t('profile.save_success')); // Connect to existing key
+            await fetchProfile(); // Refresh local data 
+            await refreshUser(); // Refresh global context for Navbar
         } catch (error) {
             console.error('Error updating profile:', error);
             setMessage(t('profile.fail'));
@@ -88,8 +86,26 @@ const Profile = () => {
                 </div>
 
                 <div className="p-6">
+                    {/* Profile Completion Reward Banner */}
+                    {!user.profile_completed && (
+                        <div className="mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-4 text-white shadow-md flex items-center justify-between">
+                            <div>
+                                <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
+                                    <Trophy className="w-5 h-5 text-yellow-300" />
+                                    Complete Your Profile
+                                </h3>
+                                <p className="text-indigo-100 text-sm">
+                                    Fill in your Country, City, Age, and Occupation to instantly earn <span className="font-bold text-white">₳500</span>!
+                                </p>
+                            </div>
+                            <div className="bg-white/20 p-2 rounded-full">
+                                <span className="text-2xl font-bold">₳500</span>
+                            </div>
+                        </div>
+                    )}
+
                     {message && (
-                        <div className={`mb-4 p-3 rounded-lg text-sm ${message.includes('success') || message === t('profile.success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                        <div className={`mb-4 p-3 rounded-lg text-sm ${message.includes('success') || message === t('profile.success') || message.includes('earned') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                             {message}
                         </div>
                     )}
@@ -164,7 +180,53 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        <div className="pt-4 border-t border-gray-100">
+                        {/* Terms & Legal */}
+                        <div className="pt-6 border-t border-gray-100">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Terms & Legal</h3>
+                            {user.terms_accepted_at ? (
+                                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                                    <div className="flex-shrink-0">
+                                        <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-green-800">
+                                            <Trans
+                                                i18nKey="profile.terms_accepted"
+                                                values={{ date: new Date(user.terms_accepted_at).toLocaleDateString() }}
+                                                components={{
+                                                    1: <a href="/terms" target="_blank" className="underline hover:text-green-900 font-bold">Terms</a>,
+                                                    3: <a href="/privacy" target="_blank" className="underline hover:text-green-900 font-bold">Privacy</a>
+                                                }}
+                                            />
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <label className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        required
+                                        name="termsAccepted"
+                                        checked={formData.termsAccepted}
+                                        onChange={handleChange}
+                                        className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                                    />
+                                    <span className="text-sm text-gray-600">
+                                        <Trans
+                                            i18nKey="privacy.consent"
+                                            components={{
+                                                1: <a href="/privacy" target="_blank" className="text-indigo-600 hover:text-indigo-500 font-medium">Privacy Policy</a>,
+                                                3: <a href="/terms" target="_blank" className="text-indigo-600 hover:text-indigo-500 font-medium">Terms of Service</a>
+                                            }}
+                                        />
+                                    </span>
+                                </label>
+                            )}
+                        </div>
+
+                        <div className="pt-4">
                             <button
                                 type="submit"
                                 className="w-full md:w-auto px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
@@ -173,6 +235,12 @@ const Profile = () => {
                             </button>
                         </div>
                     </form>
+
+                    {/* Debug Button for Testing - Visible to all for now or check admin */}
+                    {/* Debug Button Hidden for Production */}
+                    {/* <div className="mt-8 border-t pt-4">
+                        <button ... > ... </button>
+                    </div> */}
                 </div>
             </div>
 

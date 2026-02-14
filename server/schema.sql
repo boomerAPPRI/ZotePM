@@ -87,3 +87,21 @@ CREATE TABLE IF NOT EXISTS feedback (
 
 -- Initialize feedback setting
 INSERT INTO system_settings (key, value) VALUES ('feedback_enabled', 'true') ON CONFLICT DO NOTHING;
+
+-- Challenges table
+CREATE TABLE IF NOT EXISTS challenges (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL,
+    market_ids JSONB, 
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Profile Completion Reward
+ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_completed BOOLEAN DEFAULT false;
+
+-- Terms Acceptance
+ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMP;

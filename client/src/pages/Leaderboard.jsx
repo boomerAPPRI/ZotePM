@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Leaderboard = () => {
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [leaders, setLeaders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
+        if (!user) {
+            navigate('/');
+            return;
+        }
+
         const fetchLeaderboard = async () => {
             try {
                 const response = await axios.get('/api/leaderboard?limit=200');
@@ -22,7 +31,7 @@ const Leaderboard = () => {
         };
 
         fetchLeaderboard();
-    }, []);
+    }, [user, navigate]);
 
     if (loading) return <div className="text-center mt-10">Loading...</div>;
     if (error) return <div className="text-center mt-10 text-red-500">{error}</div>;
